@@ -220,17 +220,28 @@ push_release_commit_and_tag() {
 create_github_release() {
     local tag="$1"
     local installer="$2"
+    local checksum="$3"
 
-    if ! gh release create "$tag" "$installer" \
+    if ! gh release create "$tag" "$installer" "$checksum" \
         --repo "$GITHUB_REPOSITORY_SLUG" \
         --verify-tag \
         --title "CS2 Focus Guard $tag" \
         --generate-notes; then
         printf '\nGitHub Release 尚未建立。遠端版本提交與 tag 已保留，可修正問題後執行：\n' >&2
-        printf 'gh release create %q %q --repo %q --verify-tag --title %q --generate-notes\n' \
-            "$tag" "$installer" "$GITHUB_REPOSITORY_SLUG" "CS2 Focus Guard $tag" >&2
+        printf 'gh release create %q %q %q --repo %q --verify-tag --title %q --generate-notes\n' \
+            "$tag" "$installer" "$checksum" "$GITHUB_REPOSITORY_SLUG" "CS2 Focus Guard $tag" >&2
         fail "無法建立 GitHub Release。"
     fi
+}
+
+create_installer_checksum() {
+    local installer="$1"
+    local checksum="$2"
+    local hash
+
+    hash="$(sha256sum "$installer")"
+    hash="${hash%% *}"
+    printf '%s  %s\n' "$hash" "$(basename "$installer")" > "$checksum"
 }
 
 next_patch_version() {
@@ -323,11 +334,12 @@ cleanup_release_version_files() {
 }
 
 run_release_build() {
-    local version tag iscc installer
+    local version tag iscc installer checksum
 
     require_command dotnet
     require_command git
     require_command gh
+    require_command sha256sum
     ensure_version_files_clean
     ensure_release_worktree_clean
     ensure_release_branch_current
@@ -365,6 +377,8 @@ run_release_build() {
 
     installer="$ARTIFACT_DIR/CS2FocusGuard-Setup-$version-x64.exe"
     [[ -f "$installer" ]] || fail "找不到預期的安裝程式: $installer"
+    checksum="$installer.sha256"
+    create_installer_checksum "$installer" "$checksum"
 
     printf '正在建立版本提交...\n'
     create_release_commit "$tag"
@@ -373,7 +387,7 @@ run_release_build() {
     push_release_commit_and_tag "$tag"
 
     printf '正在建立 GitHub Release 並上傳安裝程式...\n'
-    create_github_release "$tag" "$installer"
+    create_github_release "$tag" "$installer" "$checksum"
 
     printf '\n正式版本已建立並發布: %s\n' "$installer"
     printf 'GitHub Release: https://github.com/%s/releases/tag/%s\n' \

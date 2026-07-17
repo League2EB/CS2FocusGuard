@@ -55,7 +55,40 @@ internal static class Strings
             ["LanguageToggle"] = ("Switch language", "切換語言"),
             ["AlreadyRunning"] = (
                 "CS2 Focus Guard is already running.",
-                "CS2 專注守衛已經在執行。")
+                "CS2 專注守衛已經在執行。"),
+            ["UpdateAvailableTitle"] = (
+                "Update available",
+                "有可用更新"),
+            ["UpdateAvailableMessage"] = (
+                "Version {0} is available. Download and install it now?",
+                "已有 {0} 版本可用。現在下載並安裝嗎？"),
+            ["UpdateAvailableMenu"] = (
+                "Update to version {0}",
+                "更新至 {0} 版本"),
+            ["UpdateNow"] = ("Update now", "立即更新"),
+            ["UpdateLater"] = ("Later", "稍後"),
+            ["UpdateDownloadingTitle"] = (
+                "Downloading update",
+                "正在下載更新"),
+            ["UpdatePreparing"] = (
+                "Preparing the update…",
+                "正在準備更新…"),
+            ["UpdateDownloadingProgress"] = (
+                "Downloaded {0} of {1}",
+                "已下載 {0} / {1}"),
+            ["UpdateDownloadingUnknownProgress"] = (
+                "Downloaded {0}",
+                "已下載 {0}"),
+            ["UpdateVerifying"] = (
+                "Verifying the downloaded update…",
+                "正在驗證下載的更新…"),
+            ["UpdateInstalling"] = (
+                "Installing the update. The app will restart shortly.",
+                "正在安裝更新，程式即將自動重新啟動。"),
+            ["UpdateFailed"] = (
+                "The update could not be completed. Please try again later.",
+                "無法完成更新，請稍後再試。"),
+            ["Cancel"] = ("Cancel", "取消")
         };
 
     internal static event EventHandler? LanguageChanged;
@@ -78,6 +111,9 @@ internal static class Strings
         var (english, chinese) = Values[key];
         return _useTraditionalChinese ? chinese : english;
     }
+
+    internal static string Format(string key, params object[] arguments) =>
+        string.Format(CultureInfo.CurrentCulture, Get(key), arguments);
 
     internal static string Status(GuardStatus status) =>
         status.State switch

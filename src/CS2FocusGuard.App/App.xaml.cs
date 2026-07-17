@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipes;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Threading;
 using CS2FocusGuard.Core;
@@ -16,16 +17,22 @@ public partial class App : System.Windows.Application
 {
     private const string InstanceName = "Local\\CS2FocusGuard-5DDB1D23";
     private const string PipeName = "CS2FocusGuard-5DDB1D23";
+    private static readonly TimeSpan UpdateRequestTimeout = TimeSpan.FromSeconds(15);
     private Mutex? _instanceMutex;
     private CancellationTokenSource? _pipeCancellation;
     private AppRuntime? _runtime;
     private MainWindow? _mainWindow;
     private Forms.NotifyIcon? _trayIcon;
     private Forms.ToolStripMenuItem? _trayStatusItem;
+    private Forms.ToolStripMenuItem? _trayUpdateItem;
     private Forms.ToolStripMenuItem? _trayOpenItem;
     private Forms.ToolStripMenuItem? _trayExitItem;
     private System.Drawing.Icon? _applicationIcon;
+    private HttpClient? _updateHttpClient;
+    private UpdateService? _updateService;
+    private AvailableUpdate? _availableUpdate;
     private bool _isExiting;
+    private bool _isUpdatePromptOpen;
     private bool _runtimeDisposed;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -81,6 +88,8 @@ public partial class App : System.Windows.Application
             try
             {
                 await _runtime.InitializeAsync();
+                InitializeUpdateService();
+                _ = CheckForUpdateAsync();
             }
             catch (Exception exception)
             {
@@ -142,6 +151,7 @@ public partial class App : System.Windows.Application
         _pipeCancellation?.Dispose();
         _trayIcon?.Dispose();
         _applicationIcon?.Dispose();
+        _updateHttpClient?.Dispose();
 
         if (_instanceMutex is not null)
         {
@@ -159,6 +169,12 @@ public partial class App : System.Windows.Application
             Enabled = false,
             Text = Strings.Status(_runtime!.Status)
         };
+        _trayUpdateItem = new Forms.ToolStripMenuItem
+        {
+            Visible = false
+        };
+        _trayUpdateItem.Click += (_, _) =>
+            Dispatcher.Invoke(() => _ = PromptForUpdateAsync());
         _trayOpenItem = new Forms.ToolStripMenuItem(Strings.Get("Open"));
         _trayOpenItem.Click += (_, _) => Dispatcher.Invoke(ShowMainWindow);
         _trayExitItem = new Forms.ToolStripMenuItem(Strings.Get("Exit"));
@@ -168,6 +184,7 @@ public partial class App : System.Windows.Application
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add(_trayStatusItem);
         menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add(_trayUpdateItem);
         menu.Items.Add(_trayOpenItem);
         menu.Items.Add(_trayExitItem);
 
@@ -180,6 +197,154 @@ public partial class App : System.Windows.Application
             Visible = true
         };
         _trayIcon.DoubleClick += (_, _) => Dispatcher.Invoke(ShowMainWindow);
+    }
+
+    private void InitializeUpdateService()
+    {
+        var version = GetType().Assembly.GetName().Version
+            ?? throw new InvalidOperationException("The application version is unavailable.");
+        _updateHttpClient = new HttpClient
+        {
+            Timeout = UpdateRequestTimeout
+        };
+        _updateService = new UpdateService(
+            _updateHttpClient,
+            version,
+            AppDataPaths.UpdatesDirectory);
+    }
+
+    private async Task CheckForUpdateAsync()
+    {
+        if (_updateService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var update = await _updateService.CheckForUpdateAsync();
+            if (update is null || _isExiting)
+            {
+                return;
+            }
+
+            await Dispatcher.InvokeAsync(() => PresentUpdate(update));
+        }
+        catch (OperationCanceledException) when (_isExiting)
+        {
+        }
+        catch (Exception exception)
+        {
+            StartupErrorLog.Write("Update check", exception);
+        }
+    }
+
+    private void PresentUpdate(AvailableUpdate update)
+    {
+        if (_isExiting)
+        {
+            return;
+        }
+
+        _availableUpdate = update;
+        if (_trayUpdateItem is not null)
+        {
+            _trayUpdateItem.Text = Strings.Format(
+                "UpdateAvailableMenu",
+                update.Version.ToString(3));
+            _trayUpdateItem.Visible = true;
+        }
+
+        if (_mainWindow?.IsVisible is true)
+        {
+            _ = PromptForUpdateAsync();
+        }
+        else
+        {
+            _trayIcon?.ShowBalloonTip(
+                5000,
+                Strings.Get("UpdateAvailableTitle"),
+                Strings.Format("UpdateAvailableMessage", update.Version.ToString(3)),
+                Forms.ToolTipIcon.Info);
+        }
+    }
+
+    private async Task PromptForUpdateAsync()
+    {
+        if (_isExiting || _isUpdatePromptOpen || _availableUpdate is null)
+        {
+            return;
+        }
+
+        _isUpdatePromptOpen = true;
+        try
+        {
+            ShowMainWindow();
+            var dialog = new UpdateAvailableWindow(_availableUpdate.Version)
+            {
+                Owner = _mainWindow
+            };
+            dialog.ShowDialog();
+            if (dialog.ShouldUpdate)
+            {
+                await InstallUpdateAsync(_availableUpdate);
+            }
+        }
+        finally
+        {
+            _isUpdatePromptOpen = false;
+        }
+    }
+
+    private async Task InstallUpdateAsync(AvailableUpdate update)
+    {
+        if (_updateService is null || _isExiting)
+        {
+            return;
+        }
+
+        using var cancellationSource = new CancellationTokenSource();
+        var progressWindow = new UpdateProgressWindow(cancellationSource)
+        {
+            Owner = _mainWindow
+        };
+        var updateStarted = false;
+        progressWindow.Show();
+
+        try
+        {
+            var progress = new Progress<UpdateDownloadProgress>(progressWindow.ReportProgress);
+            var installerPath = await _updateService.DownloadInstallerAsync(
+                update,
+                progress,
+                cancellationSource.Token);
+            progressWindow.ShowInstalling();
+            UpdateInstallerLauncher.Launch(installerPath);
+            updateStarted = true;
+            progressWindow.AllowClose();
+            progressWindow.Close();
+            await RequestExitAsync();
+        }
+        catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            StartupErrorLog.Write("Update install", exception);
+            System.Windows.MessageBox.Show(
+                Strings.Get("UpdateFailed"),
+                Strings.Get("AppTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            if (!updateStarted)
+            {
+                progressWindow.AllowClose();
+                progressWindow.Close();
+            }
+        }
     }
 
     private static System.Drawing.Icon LoadApplicationIcon()
@@ -237,6 +402,13 @@ public partial class App : System.Windows.Application
         if (_trayOpenItem is not null)
         {
             _trayOpenItem.Text = Strings.Get("Open");
+        }
+
+        if (_trayUpdateItem is not null && _availableUpdate is not null)
+        {
+            _trayUpdateItem.Text = Strings.Format(
+                "UpdateAvailableMenu",
+                _availableUpdate.Version.ToString(3));
         }
 
         if (_trayExitItem is not null)

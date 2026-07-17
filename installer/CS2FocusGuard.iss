@@ -51,6 +51,8 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; \
     Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait skipifdoesntexist; \
+    Check: ShouldRestartApplication
 
 [UninstallRun]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--exit"; \
@@ -87,6 +89,74 @@ begin
   Result := RemoveUserData;
 end;
 
+function ShouldRestartApplication(): Boolean;
+var
+  ParameterIndex: Integer;
+begin
+  Result := False;
+  for ParameterIndex := 1 to ParamCount do
+  begin
+    if CompareText(ParamStr(ParameterIndex), '/RESTARTAPP') = 0 then
+    begin
+      Result := True;
+      exit;
+    end;
+  end;
+end;
+
+function IsApplicationRunning(): Boolean;
+var
+  OutputFile: String;
+  ResultCode: Integer;
+  OutputLines: TArrayOfString;
+  LineIndex: Integer;
+begin
+  OutputFile := ExpandConstant('{tmp}\CS2FocusGuard-processes.txt');
+  DeleteFile(OutputFile);
+  Result := Exec(
+    ExpandConstant('{sys}\cmd.exe'),
+    '/C tasklist /FI "IMAGENAME eq CS2FocusGuard.exe" /NH /FO CSV > "' +
+      OutputFile + '"',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode) and
+    (ResultCode = 0) and
+    LoadStringsFromFile(OutputFile, OutputLines);
+  DeleteFile(OutputFile);
+
+  if not Result then
+    exit;
+
+  Result := False;
+  for LineIndex := 0 to GetArrayLength(OutputLines) - 1 do
+  begin
+    if Pos('"CS2FocusGuard.exe"', OutputLines[LineIndex]) > 0 then
+    begin
+      Result := True;
+      exit;
+    end;
+  end;
+end;
+
+function WaitForApplicationExit(): Boolean;
+var
+  Attempt: Integer;
+begin
+  for Attempt := 1 to 50 do
+  begin
+    if not IsApplicationRunning() then
+    begin
+      Result := True;
+      exit;
+    end;
+
+    Sleep(200);
+  end;
+
+  Result := False;
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   ResultCode: Integer;
@@ -96,7 +166,8 @@ begin
   begin
     Exec(ExpandConstant('{app}\{#MyAppExeName}'), '--exit', '',
       SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Sleep(1000);
+    if not WaitForApplicationExit() then
+      Result := 'CS2 Focus Guard 未在 10 秒內結束。';
   end;
 end;
 

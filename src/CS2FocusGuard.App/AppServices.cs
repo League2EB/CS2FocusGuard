@@ -15,6 +15,9 @@ internal static class AppDataPaths
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "CS2FocusGuard");
+
+    internal static string UpdatesDirectory =>
+        Path.Combine(DataDirectory, "updates");
 }
 
 internal static class StartupErrorLog
