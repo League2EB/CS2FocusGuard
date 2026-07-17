@@ -1,6 +1,6 @@
 param(
     [string]$SourceImagePath = (
-        Join-Path $PSScriptRoot '..\photo_2026-07-16_22-16-31_ios26-glass.png'
+        Join-Path $PSScriptRoot '..\assets\source\app-icon\ios26-glass.png'
     ),
     [string]$OutputDirectory = (
         Join-Path $PSScriptRoot '..\src\CS2FocusGuard.App\Assets'
