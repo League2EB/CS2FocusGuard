@@ -1,0 +1,99 @@
+using System.Globalization;
+using CS2FocusGuard.Core;
+
+namespace CS2FocusGuard.App;
+
+internal static class Strings
+{
+    private static bool _useTraditionalChinese =
+        IsTraditionalChinese(CultureInfo.CurrentUICulture);
+
+    private static readonly IReadOnlyDictionary<string, (string English, string Chinese)> Values =
+        new Dictionary<string, (string, string)>
+        {
+            ["AppTitle"] = ("CS2 Focus Guard", "CS2 專注守衛"),
+            ["Subtitle"] = (
+                "Block notifications and unapproved app audio while Counter-Strike 2 is running.",
+                "Counter-Strike 2 執行時阻擋通知與未允許的應用程式聲音。"),
+            ["Enabled"] = ("Enable", "啟用"),
+            ["EnabledDescription"] = (
+                "Monitor cs2.exe and automatically control notifications and app audio.",
+                "監控 cs2.exe 並自動控制通知與應用程式聲音。"),
+            ["StartWithWindows"] = ("Start with Windows", "隨 Windows 啟動"),
+            ["StartDescription"] = (
+                "Launch quietly in the system tray after sign-in.",
+                "登入後在系統匣中安靜啟動。"),
+            ["CloseToTray"] = ("Close to system tray", "關閉時縮到系統匣"),
+            ["CloseDescription"] = (
+                "Keep monitoring when the window is closed.",
+                "關閉視窗後繼續在背景監控。"),
+            ["Status"] = ("Status", "狀態"),
+            ["Disabled"] = ("Disabled", "已停用"),
+            ["Waiting"] = ("Waiting for Counter-Strike 2", "正在等待 Counter-Strike 2"),
+            ["Suppressed"] = (
+                "Notifications and unapproved app audio blocked",
+                "已阻擋通知與未允許的應用程式聲音"),
+            ["UserOverride"] = (
+                "Windows notification mode was changed manually",
+                "Windows 通知模式已由使用者手動變更"),
+            ["Error"] = ("Protection unavailable", "防護功能無法使用"),
+            ["AudioAllowlist"] = ("Audio allowlist", "音訊白名單"),
+            ["AudioAllowlistDescription"] = (
+                "Only allowed apps can play audio while Counter-Strike 2 is running.",
+                "Counter-Strike 2 執行時，只有允許的應用程式可以發出聲音。"),
+            ["Cs2AlwaysAllowed"] = (
+                "Counter-Strike 2 is always allowed.",
+                "Counter-Strike 2 永遠保持允許。"),
+            ["SearchApplications"] = ("Search applications", "搜尋應用程式"),
+            ["Refresh"] = ("Refresh", "重新整理"),
+            ["LoadingApplications"] = ("Loading applications…", "正在載入應用程式…"),
+            ["NoApplications"] = (
+                "No matching applications.",
+                "找不到符合的應用程式。"),
+            ["Open"] = ("Open", "開啟主畫面"),
+            ["Exit"] = ("Exit", "結束"),
+            ["LanguageToggle"] = ("Switch language", "切換語言"),
+            ["AlreadyRunning"] = (
+                "CS2 Focus Guard is already running.",
+                "CS2 專注守衛已經在執行。")
+        };
+
+    internal static event EventHandler? LanguageChanged;
+
+    internal static bool UseTraditionalChinese => _useTraditionalChinese;
+
+    internal static void SetUseTraditionalChinese(bool useTraditionalChinese)
+    {
+        if (_useTraditionalChinese == useTraditionalChinese)
+        {
+            return;
+        }
+
+        _useTraditionalChinese = useTraditionalChinese;
+        LanguageChanged?.Invoke(null, EventArgs.Empty);
+    }
+
+    internal static string Get(string key)
+    {
+        var (english, chinese) = Values[key];
+        return _useTraditionalChinese ? chinese : english;
+    }
+
+    internal static string Status(GuardStatus status) =>
+        status.State switch
+        {
+            GuardState.Disabled => Get("Disabled"),
+            GuardState.Waiting => Get("Waiting"),
+            GuardState.Suppressed => Get("Suppressed"),
+            GuardState.UserOverride => Get("UserOverride"),
+            GuardState.Error when !string.IsNullOrWhiteSpace(status.Detail) =>
+                $"{Get("Error")}: {status.Detail}",
+            GuardState.Error => Get("Error"),
+            _ => Get("Error")
+        };
+
+    private static bool IsTraditionalChinese(CultureInfo culture) =>
+        culture.Name.StartsWith("zh-TW", StringComparison.OrdinalIgnoreCase) ||
+        culture.Name.StartsWith("zh-HK", StringComparison.OrdinalIgnoreCase) ||
+        culture.Name.StartsWith("zh-Hant", StringComparison.OrdinalIgnoreCase);
+}

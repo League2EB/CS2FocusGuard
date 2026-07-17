@@ -1,0 +1,89 @@
+# Visual Studio Files
+.vs/
+.vscode/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Build Outputs
+**/bin/
+**/obj/
+publish/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+.nuget/
+project.lock.json
+project.fragment.lock.json
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# IDE-Specific Files
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.DotSettings.user
+
+# Temporary & Cache Files
+*.tmp
+*.temp
+*.log
+*.cache
+*.bak
+*.orig
+
+# Auto-generated Files
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp_proj
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Installer Build Outputs
+[Ii]nstaller/[Oo]utput/
+*.msi
+*.msm
+*.msp
+
+# Website
+website/node_modules/
+website/dist/
+website/.astro/

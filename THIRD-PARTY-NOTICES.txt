@@ -1,0 +1,18 @@
+CS2 Focus Guard includes interoperability definitions derived from:
+
+Quiet Hours reverse-engineering examples
+Copyright (c) Rafael Rivera
+Licensed under the MIT License
+https://gist.github.com/riverar/085d98ffb1343e92225a10817109b2e3
+
+windows-focus-assist
+Copyright (c) 2018 Jan Hannemann
+Licensed under the MIT License
+https://github.com/bitdisaster/windows-focus-assist
+
+The Traditional Chinese Inno Setup messages are sourced from the WinMerge
+project:
+https://github.com/WinMerge/winmerge/blob/master/Translations/InnoSetup/Unbundled.is6/ChineseTraditional.isl
+
+Inno Setup is Copyright (C) 1997-2026 Jordan Russell and contributors.
+https://jrsoftware.org/isinfo.php

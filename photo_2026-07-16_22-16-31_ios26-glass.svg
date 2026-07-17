@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="0 0 1254 1254" fill="none">
+  <defs>
+    <clipPath id="appIconMask">
+      <rect width="1254" height="1254" rx="100"/>
+    </clipPath>
+    <linearGradient id="glassFace" x1="70" y1="55" x2="489" y2="203" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".11"/>
+      <stop offset=".48" stop-color="#D9EAFF" stop-opacity=".042"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="glassEdge" x1="84" y1="54" x2="428" y2="178" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".28"/>
+      <stop offset=".55" stop-color="#EAF4FF" stop-opacity=".09"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glassOrb" cx="0" cy="0" r="1" gradientTransform="translate(1124 1050) rotate(-135) scale(162 162)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".095"/>
+      <stop offset=".58" stop-color="#D9EAFF" stop-opacity=".035"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="orbDiffusion" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="15"/>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#appIconMask)">
+    <g id="background-artwork">
+      <image href="photo_2026-07-16_22-16-31_coinbase-blue.jpg" width="1254" height="1254" preserveAspectRatio="none"/>
+    </g>
+
+    <g id="liquid-glass-foreground">
+      <path d="M60 47H516C449 85 408 131 374 198H60Z" fill="url(#glassFace)"/>
+      <path d="M84 58H450C417 78 394 101 375 132" stroke="url(#glassEdge)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M62 95V302" stroke="white" stroke-opacity=".07" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="1124" cy="1050" r="156" fill="url(#glassOrb)" filter="url(#orbDiffusion)"/>
+      <path d="M1026 954C1071 916 1136 900 1193 915" stroke="white" stroke-opacity=".12" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="1093" cy="983" rx="24" ry="10" transform="rotate(-34 1093 983)" fill="white" fill-opacity=".10"/>
+    </g>
+  </g>
+</svg>

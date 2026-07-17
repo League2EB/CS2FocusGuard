@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CS2FocusGuard.Core\CS2FocusGuard.Core.csproj" />
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <AssemblyName>CS2FocusGuard</AssemblyName>
+    <RootNamespace>CS2FocusGuard.App</RootNamespace>
+    <Version>1.0.5</Version>
+    <Product>CS2 Focus Guard</Product>
+    <Description>Isolates Windows notifications and unapproved app audio while Counter-Strike 2 is running.</Description>
+  </PropertyGroup>
+
+</Project>
