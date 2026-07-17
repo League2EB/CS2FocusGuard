@@ -10,8 +10,13 @@ readonly INSTALLER_SCRIPT="$REPO_ROOT/$INSTALLER_SCRIPT_REL"
 readonly DEBUG_EXE="$REPO_ROOT/src/CS2FocusGuard.App/bin/Debug/net8.0-windows/CS2FocusGuard.exe"
 readonly PUBLISH_DIR="$REPO_ROOT/publish"
 readonly ARTIFACT_DIR="$REPO_ROOT/artifacts"
+readonly RELEASE_REMOTE="origin"
+readonly RELEASE_BRANCH="main"
+readonly GITHUB_REPOSITORY_SLUG="League2EB/CS2FocusGuard"
 release_backup_dir=""
 release_versions_modified=false
+release_version_committed=false
+release_version_override=""
 
 fail() {
     printf '錯誤: %s\n' "$*" >&2
@@ -140,6 +145,94 @@ ensure_version_files_clean() {
     fi
 }
 
+ensure_release_worktree_clean() {
+    if [[ -n "$(git -C "$REPO_ROOT" status --porcelain --untracked-files=all)" ]]; then
+        fail "正式打包前工作目錄必須完全乾淨，請先確認或提交所有變更。"
+    fi
+}
+
+ensure_release_branch_current() {
+    local current_branch head_commit remote_commit
+
+    current_branch="$(git -C "$REPO_ROOT" symbolic-ref --quiet --short HEAD)" ||
+        fail "正式打包必須在 $RELEASE_BRANCH 分支上執行。"
+    [[ "$current_branch" == "$RELEASE_BRANCH" ]] ||
+        fail "正式打包必須在 $RELEASE_BRANCH 分支上執行，目前為 $current_branch。"
+
+    if ! remote_commit="$(
+        git -C "$REPO_ROOT" ls-remote "$RELEASE_REMOTE" "refs/heads/$RELEASE_BRANCH"
+    )"; then
+        fail "無法讀取 $RELEASE_REMOTE/$RELEASE_BRANCH。"
+    fi
+
+    remote_commit="${remote_commit%%$'\t'*}"
+    [[ -n "$remote_commit" ]] ||
+        fail "找不到遠端分支 $RELEASE_REMOTE/$RELEASE_BRANCH。"
+
+    head_commit="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+    [[ "$head_commit" == "$remote_commit" ]] ||
+        fail "本機 $RELEASE_BRANCH 與 $RELEASE_REMOTE/$RELEASE_BRANCH 不同步，請先同步後再打包。"
+}
+
+ensure_github_cli_authenticated() {
+    gh auth status --hostname github.com >/dev/null 2>&1 ||
+        fail "GitHub CLI 尚未登入，請先執行 gh auth login。"
+}
+
+ensure_release_target_available() {
+    local tag="$1"
+
+    if git -C "$REPO_ROOT" rev-parse --verify --quiet "refs/tags/$tag" >/dev/null; then
+        fail "本機已存在版本 tag: $tag"
+    fi
+
+    if git -C "$REPO_ROOT" ls-remote --exit-code --tags "$RELEASE_REMOTE" "refs/tags/$tag" \
+        >/dev/null 2>&1; then
+        fail "遠端已存在版本 tag: $tag"
+    fi
+
+    if gh release view "$tag" --repo "$GITHUB_REPOSITORY_SLUG" >/dev/null 2>&1; then
+        fail "GitHub Release 已存在: $tag"
+    fi
+}
+
+create_release_commit() {
+    local tag="$1"
+
+    git -C "$REPO_ROOT" add -- "$APP_PROJECT_REL" "$INSTALLER_SCRIPT_REL"
+    if git -C "$REPO_ROOT" diff --cached --quiet -- "$APP_PROJECT_REL" "$INSTALLER_SCRIPT_REL"; then
+        fail "找不到可提交的版本檔案變更。"
+    fi
+
+    git -C "$REPO_ROOT" commit -m "release: $tag"
+    release_version_committed=true
+}
+
+push_release_commit_and_tag() {
+    local tag="$1"
+
+    git -C "$REPO_ROOT" tag -a "$tag" -m "Release $tag"
+    git -C "$REPO_ROOT" push --atomic "$RELEASE_REMOTE" \
+        "HEAD:refs/heads/$RELEASE_BRANCH" "refs/tags/$tag" ||
+        fail "無法原子推送版本提交與 tag。已保留本機提交和 tag，請確認後重試。"
+}
+
+create_github_release() {
+    local tag="$1"
+    local installer="$2"
+
+    if ! gh release create "$tag" "$installer" \
+        --repo "$GITHUB_REPOSITORY_SLUG" \
+        --verify-tag \
+        --title "CS2 Focus Guard $tag" \
+        --generate-notes; then
+        printf '\nGitHub Release 尚未建立。遠端版本提交與 tag 已保留，可修正問題後執行：\n' >&2
+        printf 'gh release create %q %q --repo %q --verify-tag --title %q --generate-notes\n' \
+            "$tag" "$installer" "$GITHUB_REPOSITORY_SLUG" "CS2 Focus Guard $tag" >&2
+        fail "無法建立 GitHub Release。"
+    fi
+}
+
 next_patch_version() {
     local current_version major minor patch
 
@@ -157,6 +250,14 @@ next_patch_version() {
     fi
 
     printf '%s.%s.%s\n' "$major" "$minor" "$((10#$patch + 1))"
+}
+
+release_version() {
+    if [[ -n "$release_version_override" ]]; then
+        printf '%s\n' "$release_version_override"
+    else
+        next_patch_version
+    fi
 }
 
 update_version_files() {
@@ -205,9 +306,12 @@ cleanup_release_version_files() {
 
     trap - EXIT
 
-    if [[ "$release_versions_modified" == true && "$status" -ne 0 ]]; then
+    if [[ "$release_versions_modified" == true &&
+        "$release_version_committed" == false &&
+        "$status" -ne 0 ]]; then
         cp "$release_backup_dir/CS2FocusGuard.App.csproj" "$APP_PROJECT"
         cp "$release_backup_dir/CS2FocusGuard.iss" "$INSTALLER_SCRIPT"
+        git -C "$REPO_ROOT" reset --quiet -- "$APP_PROJECT_REL" "$INSTALLER_SCRIPT_REL"
         printf '正式打包失敗，已還原版本檔案。\n' >&2
     fi
 
@@ -219,15 +323,22 @@ cleanup_release_version_files() {
 }
 
 run_release_build() {
-    local version iscc installer
+    local version tag iscc installer
 
     require_command dotnet
+    require_command git
+    require_command gh
     ensure_version_files_clean
+    ensure_release_worktree_clean
+    ensure_release_branch_current
+    ensure_github_cli_authenticated
 
     printf '正在執行 Release 測試...\n'
     dotnet test "$REPO_ROOT/CS2FocusGuard.sln" -c Release --nologo
 
-    version="$(next_patch_version)"
+    version="$(release_version)"
+    tag="v$version"
+    ensure_release_target_available "$tag"
     iscc="$(find_iscc)"
 
     release_backup_dir="$(mktemp -d)"
@@ -255,13 +366,54 @@ run_release_build() {
     installer="$ARTIFACT_DIR/CS2FocusGuard-Setup-$version-x64.exe"
     [[ -f "$installer" ]] || fail "找不到預期的安裝程式: $installer"
 
-    printf '\n正式版本已建立: %s\n' "$installer"
+    printf '正在建立版本提交...\n'
+    create_release_commit "$tag"
+
+    printf '正在建立並推送版本 tag...\n'
+    push_release_commit_and_tag "$tag"
+
+    printf '正在建立 GitHub Release 並上傳安裝程式...\n'
+    create_github_release "$tag" "$installer"
+
+    printf '\n正式版本已建立並發布: %s\n' "$installer"
+    printf 'GitHub Release: https://github.com/%s/releases/tag/%s\n' \
+        "$GITHUB_REPOSITORY_SLUG" "$tag"
+}
+
+parse_arguments() {
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --version)
+                [[ "$#" -ge 2 ]] ||
+                    fail "--version 必須指定三段式版本號，例如 --version 1.0.0。"
+                release_version_override="$2"
+                shift 2
+                ;;
+            --version=*)
+                release_version_override="${1#--version=}"
+                shift
+                ;;
+            *)
+                fail "不支援的參數: $1"
+                ;;
+        esac
+    done
+
+    if [[ -n "$release_version_override" &&
+        ! "$release_version_override" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        fail "版本號必須是三段式數字，例如 1.0.0。"
+    fi
 }
 
 main() {
+    parse_arguments "$@"
+
     printf 'CS2 Focus Guard 建置工具\n'
     printf '1) 本機編譯並啟動 Debug 應用程式\n'
     printf '2) 打包正式 Release 版本並自動遞增 patch 版號\n'
+    if [[ -n "$release_version_override" ]]; then
+        printf '指定正式版版本號: %s\n' "$release_version_override"
+    fi
     printf '請選擇 [1-2]: '
 
     local choice

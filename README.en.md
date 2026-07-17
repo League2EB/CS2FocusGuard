@@ -81,7 +81,7 @@ If you change the notification mode manually while playing, the application pres
 
 ### Installation Steps
 
-1. Download and run [CS2FocusGuard-Setup-1.0.1-x64.exe](artifacts/CS2FocusGuard-Setup-1.0.1-x64.exe).
+1. Download and run the latest Windows x64 installer from [GitHub Releases](https://github.com/League2EB/CS2FocusGuard/releases/latest).
 2. Complete the installer, optionally creating a desktop shortcut and starting the application with Windows.
 3. Start CS2 Focus Guard and enable protection.
 4. Launch Counter-Strike 2. The application automatically applies notification and audio allowlist protection.

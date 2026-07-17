@@ -82,8 +82,3 @@ Thumbs.db
 *.msi
 *.msm
 *.msp
-
-# Website
-website/node_modules/
-website/dist/
-website/.astro/
