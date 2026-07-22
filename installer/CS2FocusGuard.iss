@@ -1,5 +1,5 @@
 #define MyAppName "CS2 Focus Guard"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.0.2"
 #define MyAppPublisher "CS2 Focus Guard"
 #define MyAppExeName "CS2FocusGuard.exe"
 

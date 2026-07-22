@@ -16,7 +16,7 @@
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <AssemblyName>CS2FocusGuard</AssemblyName>
     <RootNamespace>CS2FocusGuard.App</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Product>CS2 Focus Guard</Product>
     <Description>Isolates Windows notifications and unapproved app audio while Counter-Strike 2 is running.</Description>
   </PropertyGroup>
