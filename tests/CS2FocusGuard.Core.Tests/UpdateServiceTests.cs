@@ -11,6 +11,53 @@ namespace CS2FocusGuard.Core.Tests;
 public sealed class UpdateServiceTests
 {
     [Fact]
+    public void TestPromptModeCreatesHigherSyntheticVersion()
+    {
+        var update = UpdatePromptTestMode.CreateSyntheticUpdate(
+            new Version(1, 0, 5));
+
+        Assert.Equal(new Version(1, 0, 6), update.Version);
+        Assert.Equal(
+            "CS2FocusGuard-Setup-1.0.6-x64.exe",
+            update.InstallerFileName);
+        Assert.Equal("update-test.invalid", update.InstallerUri.Host);
+        Assert.EndsWith(
+            ".sha256",
+            update.ChecksumUri.AbsoluteUri,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TestPromptModeNeverInstallsAcceptedUpdate()
+    {
+        Assert.False(
+            UpdatePromptTestMode.ShouldInstall(
+                userAccepted: true,
+                isTestMode: true));
+        Assert.True(
+            UpdatePromptTestMode.ShouldInstall(
+                userAccepted: true,
+                isTestMode: false));
+        Assert.False(
+            UpdatePromptTestMode.ShouldInstall(
+                userAccepted: false,
+                isTestMode: false));
+    }
+
+    [Fact]
+    public void TestPromptArgumentIsEnabledOnlyForDebugBuild()
+    {
+        var requested = UpdatePromptTestMode.IsRequested(
+            [UpdatePromptTestMode.Argument]);
+
+#if DEBUG
+        Assert.True(requested);
+#else
+        Assert.False(requested);
+#endif
+    }
+
+    [Fact]
     public async Task CheckForUpdateAsyncReturnsNewerStableReleaseWithExpectedAssets()
     {
         using var handler = new StubHttpMessageHandler(

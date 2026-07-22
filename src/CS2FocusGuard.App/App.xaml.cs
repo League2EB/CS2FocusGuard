@@ -33,11 +33,13 @@ public partial class App : System.Windows.Application
     private AvailableUpdate? _availableUpdate;
     private bool _isExiting;
     private bool _isUpdatePromptOpen;
+    private bool _isUpdatePromptTestMode;
     private bool _runtimeDisposed;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        _isUpdatePromptTestMode = UpdatePromptTestMode.IsRequested(e.Args);
 
         _instanceMutex = new Mutex(
             initiallyOwned: true,
@@ -88,8 +90,17 @@ public partial class App : System.Windows.Application
             try
             {
                 await _runtime.InitializeAsync();
-                InitializeUpdateService();
-                _ = CheckForUpdateAsync();
+                var currentVersion = InitializeUpdateService();
+                if (_isUpdatePromptTestMode)
+                {
+                    PresentUpdate(
+                        UpdatePromptTestMode.CreateSyntheticUpdate(
+                            currentVersion));
+                }
+                else
+                {
+                    _ = CheckForUpdateAsync();
+                }
             }
             catch (Exception exception)
             {
@@ -199,7 +210,7 @@ public partial class App : System.Windows.Application
         _trayIcon.DoubleClick += (_, _) => Dispatcher.Invoke(ShowMainWindow);
     }
 
-    private void InitializeUpdateService()
+    private Version InitializeUpdateService()
     {
         var version = GetType().Assembly.GetName().Version
             ?? throw new InvalidOperationException("The application version is unavailable.");
@@ -211,6 +222,7 @@ public partial class App : System.Windows.Application
             _updateHttpClient,
             version,
             AppDataPaths.UpdatesDirectory);
+        return version;
     }
 
     private async Task CheckForUpdateAsync()
@@ -285,7 +297,9 @@ public partial class App : System.Windows.Application
                 Owner = _mainWindow
             };
             dialog.ShowDialog();
-            if (dialog.ShouldUpdate)
+            if (UpdatePromptTestMode.ShouldInstall(
+                    dialog.ShouldUpdate,
+                    _isUpdatePromptTestMode))
             {
                 await InstallUpdateAsync(_availableUpdate);
             }

@@ -19,6 +19,44 @@ internal sealed record UpdateDownloadProgress(
     long? TotalBytes,
     bool IsVerifying = false);
 
+internal static class UpdatePromptTestMode
+{
+    internal const string Argument = "--test-update-prompt";
+
+    internal static bool IsRequested(IEnumerable<string> arguments)
+    {
+#if DEBUG
+        return arguments.Contains(Argument, StringComparer.OrdinalIgnoreCase);
+#else
+        return false;
+#endif
+    }
+
+    internal static AvailableUpdate CreateSyntheticUpdate(Version currentVersion)
+    {
+        ArgumentNullException.ThrowIfNull(currentVersion);
+        var build = currentVersion.Build < 0 ? 1 : checked(currentVersion.Build + 1);
+        var version = new Version(
+            currentVersion.Major,
+            currentVersion.Minor,
+            build);
+        var fileName = $"CS2FocusGuard-Setup-{version:3}-x64.exe";
+        var assetUri = new Uri(
+            $"https://update-test.invalid/{fileName}",
+            UriKind.Absolute);
+        return new AvailableUpdate(
+            version,
+            fileName,
+            assetUri,
+            new Uri($"{assetUri}.sha256", UriKind.Absolute));
+    }
+
+    internal static bool ShouldInstall(
+        bool userAccepted,
+        bool isTestMode) =>
+        userAccepted && !isTestMode;
+}
+
 internal static class UpdateInstallerLauncher
 {
     internal const string SilentInstallArgument = "/VERYSILENT";
