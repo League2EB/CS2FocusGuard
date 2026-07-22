@@ -28,23 +28,6 @@ public sealed class UpdateServiceTests
     }
 
     [Fact]
-    public void TestPromptModeNeverInstallsAcceptedUpdate()
-    {
-        Assert.False(
-            UpdatePromptTestMode.ShouldInstall(
-                userAccepted: true,
-                isTestMode: true));
-        Assert.True(
-            UpdatePromptTestMode.ShouldInstall(
-                userAccepted: true,
-                isTestMode: false));
-        Assert.False(
-            UpdatePromptTestMode.ShouldInstall(
-                userAccepted: false,
-                isTestMode: false));
-    }
-
-    [Fact]
     public void TestPromptArgumentIsEnabledOnlyForDebugBuild()
     {
         var requested = UpdatePromptTestMode.IsRequested(
@@ -142,12 +125,24 @@ public sealed class UpdateServiceTests
             fileName,
             installerUri,
             checksumUri);
+        var stages = new List<string>();
 
-        var installerPath = await service.DownloadInstallerAsync(update);
+        var installerPath = await service.DownloadInstallerAsync(
+            update,
+            stageChanged: stages.Add);
 
         Assert.Equal(Path.Combine(temporaryDirectory.Path, fileName), installerPath);
         Assert.Equal(payload, await File.ReadAllBytesAsync(installerPath));
         Assert.Empty(Directory.GetFiles(temporaryDirectory.Path, "*.part"));
+        Assert.Equal(
+            [
+                "checksum-download-started",
+                "checksum-validated",
+                "installer-download-started",
+                "installer-verified",
+                "installer-stored"
+            ],
+            stages);
     }
 
     [Fact]
@@ -180,7 +175,9 @@ public sealed class UpdateServiceTests
     [Fact]
     public void CreateStartInfoUsesSilentUpdateArguments()
     {
-        var startInfo = UpdateInstallerLauncher.CreateStartInfo(@"C:\updates\setup.exe");
+        var startInfo = UpdateInstallerLauncher.CreateStartInfo(
+            @"C:\updates\setup.exe",
+            @"C:\logs\installer.log");
 
         Assert.False(startInfo.UseShellExecute);
         Assert.True(startInfo.CreateNoWindow);
@@ -190,9 +187,53 @@ public sealed class UpdateServiceTests
                 "/SUPPRESSMSGBOXES",
                 "/NORESTART",
                 "/CLOSEAPPLICATIONS",
-                "/RESTARTAPP"
+                "/RESTARTAPP",
+                @"/LOG=C:\logs\installer.log"
             ],
             startInfo.ArgumentList);
+    }
+
+    [Fact]
+    public void ReleaseFallbackUsesOfficialVersionPage()
+    {
+        var update = new AvailableUpdate(
+            new Version(1, 0, 6),
+            "setup.exe",
+            new Uri("https://github.com/installer.exe"),
+            new Uri("https://github.com/installer.exe.sha256"));
+
+        var startInfo = ReleasePageLauncher.CreateStartInfo(
+            update.ReleasePageUri);
+
+        Assert.Equal(
+            "https://github.com/League2EB/CS2FocusGuard/releases/tag/v1.0.6",
+            startInfo.FileName);
+        Assert.True(startInfo.UseShellExecute);
+        Assert.Throws<ArgumentException>(
+            () => ReleasePageLauncher.CreateStartInfo(
+                new Uri("https://example.test/releases/v1.0.6")));
+    }
+
+    [Fact]
+    public void UpdateDiagnosticsRecordsStageAndException()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        var exception = new InvalidDataException("checksum failed");
+
+        UpdateDiagnostics.Write(
+            "operation-1",
+            "failed",
+            new Version(1, 0, 6),
+            "verification",
+            exception,
+            temporaryDirectory.Path);
+
+        var content = File.ReadAllText(
+            Path.Combine(temporaryDirectory.Path, "update.log"));
+        Assert.Contains("Operation=operation-1", content, StringComparison.Ordinal);
+        Assert.Contains("Stage=failed", content, StringComparison.Ordinal);
+        Assert.Contains("Target=1.0.6", content, StringComparison.Ordinal);
+        Assert.Contains("checksum failed", content, StringComparison.Ordinal);
     }
 
     private static string CreateReleaseDocument(

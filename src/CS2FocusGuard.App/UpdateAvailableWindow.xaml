@@ -31,16 +31,18 @@
         <StackPanel Grid.Row="2"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
-            <Button Width="{DynamicResource Metric.Control.LaterButtonWidth}"
+            <Button x:Name="LaterButton"
+                    Width="{DynamicResource Metric.Control.LaterButtonWidth}"
                     Height="{DynamicResource Metric.Control.ButtonHeight}"
                     Margin="{DynamicResource Metric.Margin.DialogButtonGap}"
                     Click="Later_Click"
                     Content="{Binding LaterText}" />
-            <Button Width="{DynamicResource Metric.Control.UpdateButtonWidth}"
+            <Button x:Name="UpdateNowButton"
+                    Width="{DynamicResource Metric.Control.UpdateButtonWidth}"
                     Height="{DynamicResource Metric.Control.ButtonHeight}"
                     Click="UpdateNow_Click"
                     Content="{Binding UpdateNowText}"
-                    Style="{StaticResource PrimaryButton}" />
+                    Style="{DynamicResource PrimaryButton}" />
         </StackPanel>
     </Grid>
 </Window>

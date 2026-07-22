@@ -120,6 +120,41 @@ internal static class Strings
             ["UpdateFailed"] = (
                 "The update could not be completed. Please try again later.",
                 "無法完成更新，請稍後再試。"),
+            ["UpdateFailedTitle"] = (
+                "Update failed",
+                "更新失敗"),
+            ["UpdateFailedMessage"] = (
+                "The update could not be completed: {0}",
+                "無法完成更新：{0}"),
+            ["UpdateFallbackMessage"] = (
+                "Try again or manually download version {0} from GitHub Releases.",
+                "請重試，或從 GitHub Releases 手動下載 {0} 版本。"),
+            ["UpdateFailureNetwork"] = (
+                "The update files could not be downloaded.",
+                "無法下載更新檔案。"),
+            ["UpdateFailureValidation"] = (
+                "The downloaded update did not pass security validation.",
+                "下載的更新未通過安全驗證。"),
+            ["UpdateFailureStorage"] = (
+                "The update files could not be saved on this device.",
+                "無法將更新檔案儲存至此裝置。"),
+            ["UpdateFailureInstaller"] = (
+                "The update installer could not be started.",
+                "無法啟動更新安裝程式。"),
+            ["UpdateFailureBrowser"] = (
+                "The download page could not be opened.",
+                "無法開啟下載頁。"),
+            ["UpdateFailureUnexpected"] = (
+                "An unexpected error occurred.",
+                "發生未預期的錯誤。"),
+            ["UpdateLogLocation"] = (
+                "Diagnostic log: {0}",
+                "診斷紀錄：{0}"),
+            ["Retry"] = ("Try again", "重試"),
+            ["OpenReleasePage"] = (
+                "Open download page",
+                "前往下載頁"),
+            ["Close"] = ("Close", "關閉"),
             ["Cancel"] = ("Cancel", "取消")
         };
 

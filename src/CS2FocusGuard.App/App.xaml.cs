@@ -185,7 +185,7 @@ public partial class App : System.Windows.Application
             Visible = false
         };
         _trayUpdateItem.Click += (_, _) =>
-            Dispatcher.Invoke(() => _ = PromptForUpdateAsync());
+            Dispatcher.Invoke(StartUpdatePrompt);
         _trayOpenItem = new Forms.ToolStripMenuItem(Strings.Get("Open"));
         _trayOpenItem.Click += (_, _) => Dispatcher.Invoke(ShowMainWindow);
         _trayExitItem = new Forms.ToolStripMenuItem(Strings.Get("Exit"));
@@ -269,7 +269,7 @@ public partial class App : System.Windows.Application
 
         if (_mainWindow?.IsVisible is true)
         {
-            _ = PromptForUpdateAsync();
+            StartUpdatePrompt();
         }
         else
         {
@@ -278,6 +278,55 @@ public partial class App : System.Windows.Application
                 Strings.Get("UpdateAvailableTitle"),
                 Strings.Format("UpdateAvailableMessage", update.Version.ToString(3)),
                 Forms.ToolTipIcon.Info);
+        }
+    }
+
+    private void StartUpdatePrompt() =>
+        _ = ObserveUpdatePromptAsync();
+
+    private async Task ObserveUpdatePromptAsync()
+    {
+        try
+        {
+            await PromptForUpdateAsync();
+        }
+        catch (Exception exception)
+        {
+            StartupErrorLog.Write("Update prompt", exception);
+            if (_availableUpdate is null || _isExiting)
+            {
+                return;
+            }
+
+            var operationId = Guid.NewGuid().ToString("N");
+            UpdateDiagnostics.Write(
+                operationId,
+                "prompt-unhandled-failure",
+                _availableUpdate.Version,
+                exception: exception);
+            try
+            {
+                ShowUpdateFailure(
+                    operationId,
+                    _availableUpdate,
+                    GetUpdateFailureKey(exception));
+            }
+            catch (Exception fallbackException)
+            {
+                StartupErrorLog.Write(
+                    "Update failure dialog",
+                    fallbackException);
+                UpdateDiagnostics.Write(
+                    operationId,
+                    "failure-dialog-failed",
+                    _availableUpdate.Version,
+                    exception: fallbackException);
+                System.Windows.MessageBox.Show(
+                    Strings.Get("UpdateFailed"),
+                    Strings.Get("UpdateFailedTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
     }
 
@@ -291,17 +340,45 @@ public partial class App : System.Windows.Application
         _isUpdatePromptOpen = true;
         try
         {
+            var update = _availableUpdate;
+            var operationId = Guid.NewGuid().ToString("N");
+            UpdateDiagnostics.Write(
+                operationId,
+                "prompt-opening",
+                update.Version);
             ShowMainWindow();
-            var dialog = new UpdateAvailableWindow(_availableUpdate.Version)
+            var dialog = new UpdateAvailableWindow(update.Version)
             {
                 Owner = _mainWindow
             };
             dialog.ShowDialog();
-            if (UpdatePromptTestMode.ShouldInstall(
-                    dialog.ShouldUpdate,
-                    _isUpdatePromptTestMode))
+            UpdateDiagnostics.Write(
+                operationId,
+                dialog.ShouldUpdate
+                    ? "prompt-accepted"
+                    : "prompt-declined",
+                update.Version,
+                _isUpdatePromptTestMode ? "Debug test mode" : null);
+            if (!dialog.ShouldUpdate)
             {
-                await InstallUpdateAsync(_availableUpdate);
+                return;
+            }
+
+            if (_isUpdatePromptTestMode)
+            {
+                UpdateDiagnostics.Write(
+                    operationId,
+                    "test-install-suppressed",
+                    update.Version);
+                return;
+            }
+
+            var shouldRetry = true;
+            while (shouldRetry && !_isExiting)
+            {
+                shouldRetry = await InstallUpdateAsync(
+                    update,
+                    operationId);
             }
         }
         finally
@@ -310,56 +387,174 @@ public partial class App : System.Windows.Application
         }
     }
 
-    private async Task InstallUpdateAsync(AvailableUpdate update)
+    private async Task<bool> InstallUpdateAsync(
+        AvailableUpdate update,
+        string operationId)
     {
-        if (_updateService is null || _isExiting)
+        if (_isExiting)
         {
-            return;
+            UpdateDiagnostics.Write(
+                operationId,
+                "install-precondition-failed",
+                update.Version,
+                "Application exit is already in progress.");
+            return false;
+        }
+
+        if (_updateService is null)
+        {
+            UpdateDiagnostics.Write(
+                operationId,
+                "install-precondition-failed",
+                update.Version,
+                "Update service is unavailable.");
+            return ShowUpdateFailure(
+                operationId,
+                update,
+                "UpdateFailureUnexpected");
         }
 
         using var cancellationSource = new CancellationTokenSource();
-        var progressWindow = new UpdateProgressWindow(cancellationSource)
-        {
-            Owner = _mainWindow
-        };
+        UpdateProgressWindow? progressWindow = null;
         var updateStarted = false;
-        progressWindow.Show();
 
         try
         {
+            UpdateDiagnostics.Write(
+                operationId,
+                "progress-opening",
+                update.Version);
+            progressWindow = new UpdateProgressWindow(cancellationSource)
+            {
+                Owner = _mainWindow
+            };
+            progressWindow.Show();
+            UpdateDiagnostics.Write(
+                operationId,
+                "progress-visible",
+                update.Version);
+
             var progress = new Progress<UpdateDownloadProgress>(progressWindow.ReportProgress);
+            UpdateDiagnostics.Write(
+                operationId,
+                "download-requested",
+                update.Version,
+                update.InstallerUri.AbsoluteUri);
             var installerPath = await _updateService.DownloadInstallerAsync(
                 update,
                 progress,
+                stage => UpdateDiagnostics.Write(
+                    operationId,
+                    stage,
+                    update.Version),
                 cancellationSource.Token);
             progressWindow.ShowInstalling();
-            UpdateInstallerLauncher.Launch(installerPath);
+            var installerLogPath = System.IO.Path.Combine(
+                AppDataPaths.DataDirectory,
+                $"update-installer-{update.Version:3}.log");
+            UpdateDiagnostics.Write(
+                operationId,
+                "installer-launching",
+                update.Version,
+                $"Installer={installerPath}; Log={installerLogPath}");
+            UpdateInstallerLauncher.Launch(
+                installerPath,
+                installerLogPath);
             updateStarted = true;
+            UpdateDiagnostics.Write(
+                operationId,
+                "installer-launched",
+                update.Version,
+                installerLogPath);
             progressWindow.AllowClose();
             progressWindow.Close();
+            UpdateDiagnostics.Write(
+                operationId,
+                "application-exit-requested",
+                update.Version);
             await RequestExitAsync();
+            return false;
         }
         catch (OperationCanceledException) when (cancellationSource.IsCancellationRequested)
         {
+            UpdateDiagnostics.Write(
+                operationId,
+                "cancelled",
+                update.Version);
+            return false;
         }
         catch (Exception exception)
         {
             StartupErrorLog.Write("Update install", exception);
-            System.Windows.MessageBox.Show(
-                Strings.Get("UpdateFailed"),
-                Strings.Get("AppTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            UpdateDiagnostics.Write(
+                operationId,
+                "failed",
+                update.Version,
+                exception: exception);
+            CloseProgressWindow(progressWindow);
+            progressWindow = null;
+            return ShowUpdateFailure(
+                operationId,
+                update,
+                GetUpdateFailureKey(exception));
         }
         finally
         {
-            if (!updateStarted)
+            if (!updateStarted && progressWindow is not null)
             {
                 progressWindow.AllowClose();
                 progressWindow.Close();
             }
         }
     }
+
+    private static void CloseProgressWindow(
+        UpdateProgressWindow? progressWindow)
+    {
+        if (progressWindow is null)
+        {
+            return;
+        }
+
+        progressWindow.AllowClose();
+        progressWindow.Close();
+    }
+
+    private bool ShowUpdateFailure(
+        string operationId,
+        AvailableUpdate update,
+        string failureKey)
+    {
+        var dialog = new UpdateFailureWindow(
+            operationId,
+            update.Version,
+            failureKey,
+            update.ReleasePageUri,
+            UpdateDiagnostics.Path)
+        {
+            Owner = _mainWindow
+        };
+        dialog.ShowDialog();
+        UpdateDiagnostics.Write(
+            operationId,
+            dialog.ShouldRetry
+                ? "retry-requested"
+                : "failure-dismissed",
+            update.Version);
+        return dialog.ShouldRetry;
+    }
+
+    private static string GetUpdateFailureKey(Exception exception) =>
+        exception switch
+        {
+            HttpRequestException => "UpdateFailureNetwork",
+            OperationCanceledException => "UpdateFailureNetwork",
+            InvalidDataException => "UpdateFailureValidation",
+            System.ComponentModel.Win32Exception or FileNotFoundException =>
+                "UpdateFailureInstaller",
+            UnauthorizedAccessException or IOException => "UpdateFailureStorage",
+            _ => "UpdateFailureUnexpected"
+        };
 
     private static System.Drawing.Icon LoadApplicationIcon()
     {

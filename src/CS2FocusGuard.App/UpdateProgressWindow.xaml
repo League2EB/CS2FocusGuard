@@ -24,17 +24,20 @@
                    FontWeight="SemiBold"
                    Foreground="{DynamicResource PrimaryTextBrush}"
                    Text="{Binding TitleText}" />
-        <TextBlock Grid.Row="1"
+        <TextBlock x:Name="ProgressStatusText"
+                   Grid.Row="1"
                    Margin="{DynamicResource Metric.Margin.ProgressStatus}"
                    Foreground="{DynamicResource SecondaryTextBrush}"
                    Text="{Binding StatusText}" />
-        <ProgressBar Grid.Row="2"
+        <ProgressBar x:Name="UpdateProgressBar"
+                     Grid.Row="2"
                      Height="{DynamicResource Metric.Control.ProgressHeight}"
                      Margin="{DynamicResource Metric.Margin.ProgressBar}"
                      Minimum="0"
                      Maximum="100"
-                     Value="{Binding ProgressPercent}" />
-        <Button Grid.Row="3"
+                     Value="{Binding ProgressPercent, Mode=OneWay}" />
+        <Button x:Name="CancelButton"
+                Grid.Row="3"
                 Width="{DynamicResource Metric.Control.CancelButtonWidth}"
                 Height="{DynamicResource Metric.Control.ButtonHeight}"
                 Margin="{DynamicResource Metric.Margin.ProgressCancel}"

@@ -53,6 +53,60 @@ internal static class StartupErrorLog
     }
 }
 
+internal static class UpdateDiagnostics
+{
+    private static readonly object Gate = new();
+
+    internal static string Path =>
+        System.IO.Path.Combine(AppDataPaths.DataDirectory, "update.log");
+
+    internal static void Write(
+        string operationId,
+        string stage,
+        Version targetVersion,
+        string? detail = null,
+        Exception? exception = null,
+        string? dataDirectory = null)
+    {
+        try
+        {
+            lock (Gate)
+            {
+                var directory = dataDirectory ?? AppDataPaths.DataDirectory;
+                Directory.CreateDirectory(directory);
+                var currentVersion =
+                    typeof(UpdateDiagnostics).Assembly.GetName().Version?.ToString(3) ??
+                    "unknown";
+                var entry =
+                    $"{DateTimeOffset.Now:O} [Update] " +
+                    $"Operation={operationId} Stage={stage} " +
+                    $"Current={currentVersion} Target={targetVersion:3} " +
+                    $"Process={Environment.ProcessId}";
+                if (!string.IsNullOrWhiteSpace(detail))
+                {
+                    entry += $" Detail={detail}";
+                }
+
+                entry += Environment.NewLine;
+                if (exception is not null)
+                {
+                    entry += $"{exception}{Environment.NewLine}";
+                }
+
+                File.AppendAllText(
+                    System.IO.Path.Combine(directory, "update.log"),
+                    entry);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+}
+
 internal static class QuietHoursProfiles
 {
     internal const string Unrestricted = "Microsoft.QuietHoursProfile.Unrestricted";

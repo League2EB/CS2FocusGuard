@@ -198,6 +198,7 @@ public sealed class AppearanceTests
             Assert.Equal(Visibility.Visible, homeHeader.Visibility);
             Assert.Equal(Visibility.Collapsed, settingsHeader.Visibility);
             Assert.Equal(Visibility.Visible, homeScroller.Visibility);
+            VerifyUpdateDialogs(window);
         }
         finally
         {
@@ -210,6 +211,72 @@ public sealed class AppearanceTests
             application.Shutdown();
             runtime.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
+    }
+
+    private static void VerifyUpdateDialogs(Window owner)
+    {
+        var availableWindow = new UpdateAvailableWindow(
+            new Version(1, 0, 2))
+        {
+            Owner = owner
+        };
+        availableWindow.Loaded += (_, _) =>
+        {
+            var updateButton = (Button)availableWindow.FindName(
+                "UpdateNowButton");
+            updateButton.RaiseEvent(
+                new RoutedEventArgs(Button.ClickEvent));
+        };
+        availableWindow.ShowDialog();
+        Assert.True(availableWindow.ShouldUpdate);
+
+        using var cancellationSource = new CancellationTokenSource();
+        var progressWindow = new UpdateProgressWindow(cancellationSource)
+        {
+            Owner = owner
+        };
+        try
+        {
+            progressWindow.Show();
+            progressWindow.ReportProgress(
+                new UpdateDownloadProgress(50, 100));
+            progressWindow.UpdateLayout();
+            var progressBar = (ProgressBar)progressWindow.FindName(
+                "UpdateProgressBar");
+            Assert.Equal(50, progressWindow.ProgressPercent);
+            Assert.Equal(50, progressBar.Value);
+            Assert.NotNull(progressWindow.FindName("ProgressStatusText"));
+            progressWindow.ShowVerification();
+            progressWindow.UpdateLayout();
+            Assert.False(progressWindow.CanCancel);
+            Assert.Equal(100, progressWindow.ProgressPercent);
+            Assert.Equal(100, progressBar.Value);
+        }
+        finally
+        {
+            progressWindow.AllowClose();
+            progressWindow.Close();
+        }
+
+        var failureWindow = new UpdateFailureWindow(
+            "operation-1",
+            new Version(1, 0, 2),
+            "UpdateFailureNetwork",
+            new Uri(
+                "https://github.com/League2EB/CS2FocusGuard/releases/tag/v1.0.2"),
+            @"C:\logs\update.log")
+        {
+            Owner = owner
+        };
+        failureWindow.Loaded += (_, _) =>
+        {
+            Assert.NotNull(failureWindow.FindName("OpenReleasePageButton"));
+            var retryButton = (Button)failureWindow.FindName("RetryButton");
+            retryButton.RaiseEvent(
+                new RoutedEventArgs(Button.ClickEvent));
+        };
+        failureWindow.ShowDialog();
+        Assert.True(failureWindow.ShouldRetry);
     }
 
     private static LinearGradientBrush AssertOpaqueWindowBackground(

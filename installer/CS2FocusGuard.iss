@@ -65,9 +65,13 @@ Type: filesandordirs; Name: "{localappdata}\CS2FocusGuard"; Check: ShouldRemoveU
 english.StartWithWindowsTask=Start automatically when Windows starts
 english.StartupOptions=Startup options:
 english.RemoveSettingsPrompt=Also remove your settings and saved recovery state?
+english.AppExitFailed=CS2 Focus Guard could not be asked to exit.
+english.AppExitTimeout=CS2 Focus Guard did not exit within 10 seconds.
 chinesetraditional.StartWithWindowsTask=隨 Windows 啟動
 chinesetraditional.StartupOptions=啟動選項：
 chinesetraditional.RemoveSettingsPrompt=是否一併移除設定與已儲存的還原狀態？
+chinesetraditional.AppExitFailed=無法要求 CS2 Focus Guard 結束。
+chinesetraditional.AppExitTimeout=CS2 Focus Guard 未在 10 秒內結束。
 
 [Code]
 var
@@ -104,7 +108,7 @@ begin
   end;
 end;
 
-function IsApplicationRunning(): Boolean;
+function TryGetApplicationRunning(var IsRunning: Boolean): Boolean;
 var
   OutputFile: String;
   ResultCode: Integer;
@@ -128,12 +132,12 @@ begin
   if not Result then
     exit;
 
-  Result := False;
+  IsRunning := False;
   for LineIndex := 0 to GetArrayLength(OutputLines) - 1 do
   begin
     if Pos('"CS2FocusGuard.exe"', OutputLines[LineIndex]) > 0 then
     begin
-      Result := True;
+      IsRunning := True;
       exit;
     end;
   end;
@@ -142,10 +146,17 @@ end;
 function WaitForApplicationExit(): Boolean;
 var
   Attempt: Integer;
+  IsRunning: Boolean;
 begin
   for Attempt := 1 to 50 do
   begin
-    if not IsApplicationRunning() then
+    if not TryGetApplicationRunning(IsRunning) then
+    begin
+      Result := False;
+      exit;
+    end;
+
+    if not IsRunning then
     begin
       Result := True;
       exit;
@@ -159,15 +170,29 @@ end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
+  ExitRequested: Boolean;
   ResultCode: Integer;
 begin
   Result := '';
   if FileExists(ExpandConstant('{app}\{#MyAppExeName}')) then
   begin
-    Exec(ExpandConstant('{app}\{#MyAppExeName}'), '--exit', '',
-      SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    ExitRequested := Exec(
+      ExpandConstant('{app}\{#MyAppExeName}'),
+      '--exit',
+      '',
+      SW_HIDE,
+      ewWaitUntilTerminated,
+      ResultCode);
+    if ExitRequested then
+      ExitRequested := ResultCode = 0;
+
     if not WaitForApplicationExit() then
-      Result := 'CS2 Focus Guard 未在 10 秒內結束。';
+    begin
+      if ExitRequested then
+        Result := ExpandConstant('{cm:AppExitTimeout}')
+      else
+        Result := ExpandConstant('{cm:AppExitFailed}');
+    end;
   end;
 end;
 

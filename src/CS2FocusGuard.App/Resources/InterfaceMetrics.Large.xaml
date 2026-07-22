@@ -20,6 +20,8 @@
     <sys:Double x:Key="Metric.Control.RefreshButton">45</sys:Double>
     <sys:Double x:Key="Metric.Control.LaterButtonWidth">100</sys:Double>
     <sys:Double x:Key="Metric.Control.UpdateButtonWidth">130</sys:Double>
+    <sys:Double x:Key="Metric.Control.RetryButtonWidth">110</sys:Double>
+    <sys:Double x:Key="Metric.Control.ReleaseButtonWidth">165</sys:Double>
     <sys:Double x:Key="Metric.Control.CancelButtonWidth">110</sys:Double>
     <sys:Double x:Key="Metric.Control.ScrollBarWidth">13</sys:Double>
     <sys:Double x:Key="Metric.Control.ProgressHeight">10</sys:Double>
@@ -39,6 +41,8 @@
     <sys:Double x:Key="Metric.Dialog.AvailableHeight">209</sys:Double>
     <sys:Double x:Key="Metric.Dialog.ProgressWidth">415</sys:Double>
     <sys:Double x:Key="Metric.Dialog.ProgressHeight">165</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.FailureWidth">525</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.FailureHeight">263</sys:Double>
 
     <sys:Double x:Key="Metric.Stroke.Icon">2.5</sys:Double>
     <sys:Double x:Key="Metric.Stroke.Settings">2.1</sys:Double>

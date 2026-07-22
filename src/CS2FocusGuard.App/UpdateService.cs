@@ -12,7 +12,11 @@ internal sealed record AvailableUpdate(
     Version Version,
     string InstallerFileName,
     Uri InstallerUri,
-    Uri ChecksumUri);
+    Uri ChecksumUri)
+{
+    internal Uri ReleasePageUri =>
+        UpdateService.CreateReleasePageUri(Version);
+}
 
 internal sealed record UpdateDownloadProgress(
     long BytesReceived,
@@ -51,10 +55,6 @@ internal static class UpdatePromptTestMode
             new Uri($"{assetUri}.sha256", UriKind.Absolute));
     }
 
-    internal static bool ShouldInstall(
-        bool userAccepted,
-        bool isTestMode) =>
-        userAccepted && !isTestMode;
 }
 
 internal static class UpdateInstallerLauncher
@@ -65,21 +65,26 @@ internal static class UpdateInstallerLauncher
     internal const string CloseApplicationsArgument = "/CLOSEAPPLICATIONS";
     internal const string RestartApplicationArgument = "/RESTARTAPP";
 
-    internal static void Launch(string installerPath)
+    internal static void Launch(
+        string installerPath,
+        string installerLogPath)
     {
         if (!File.Exists(installerPath))
         {
             throw new FileNotFoundException("The downloaded update installer was not found.", installerPath);
         }
 
-        var startInfo = CreateStartInfo(installerPath);
-        if (Process.Start(startInfo) is null)
+        var startInfo = CreateStartInfo(installerPath, installerLogPath);
+        using var process = Process.Start(startInfo);
+        if (process is null)
         {
             throw new InvalidOperationException("The update installer could not be started.");
         }
     }
 
-    internal static ProcessStartInfo CreateStartInfo(string installerPath)
+    internal static ProcessStartInfo CreateStartInfo(
+        string installerPath,
+        string installerLogPath)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -92,7 +97,43 @@ internal static class UpdateInstallerLauncher
         startInfo.ArgumentList.Add(NoRestartArgument);
         startInfo.ArgumentList.Add(CloseApplicationsArgument);
         startInfo.ArgumentList.Add(RestartApplicationArgument);
+        startInfo.ArgumentList.Add($"/LOG={installerLogPath}");
         return startInfo;
+    }
+}
+
+internal static class ReleasePageLauncher
+{
+    internal static void Open(Uri releasePageUri)
+    {
+        var startInfo = CreateStartInfo(releasePageUri);
+        using var process = Process.Start(startInfo);
+        if (process is null)
+        {
+            throw new InvalidOperationException(
+                "The release download page could not be opened.");
+        }
+    }
+
+    internal static ProcessStartInfo CreateStartInfo(Uri releasePageUri)
+    {
+        ArgumentNullException.ThrowIfNull(releasePageUri);
+        if (releasePageUri.Scheme != Uri.UriSchemeHttps ||
+            !string.Equals(
+                releasePageUri.Host,
+                "github.com",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "The release page must use the official GitHub host.",
+                nameof(releasePageUri));
+        }
+
+        return new ProcessStartInfo
+        {
+            FileName = releasePageUri.AbsoluteUri,
+            UseShellExecute = true
+        };
     }
 }
 
@@ -167,6 +208,7 @@ internal sealed class UpdateService
     internal async Task<string> DownloadInstallerAsync(
         AvailableUpdate update,
         IProgress<UpdateDownloadProgress>? progress = null,
+        Action<string>? stageChanged = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(update);
@@ -176,8 +218,11 @@ internal sealed class UpdateService
         var temporaryPath = $"{installerPath}.{Guid.NewGuid():N}.part";
         try
         {
+            stageChanged?.Invoke("checksum-download-started");
             var expectedHash = await DownloadChecksumAsync(update, cancellationToken);
+            stageChanged?.Invoke("checksum-validated");
 
+            stageChanged?.Invoke("installer-download-started");
             using var request = new HttpRequestMessage(HttpMethod.Get, update.InstallerUri);
             using var response = await _httpClient.SendAsync(
                 request,
@@ -240,7 +285,9 @@ internal sealed class UpdateService
                 throw new InvalidDataException("The update installer checksum did not match.");
             }
 
+            stageChanged?.Invoke("installer-verified");
             File.Move(temporaryPath, installerPath, overwrite: true);
+            stageChanged?.Invoke("installer-stored");
             return installerPath;
         }
         catch
@@ -317,6 +364,14 @@ internal sealed class UpdateService
         new(
             $"https://github.com/{RepositoryOwner}/{RepositoryName}/releases/download/v{version}/{fileName}",
             UriKind.Absolute);
+
+    internal static Uri CreateReleasePageUri(Version version)
+    {
+        var normalizedVersion = NormalizeVersion(version);
+        return new Uri(
+            $"https://github.com/{RepositoryOwner}/{RepositoryName}/releases/tag/v{normalizedVersion:3}",
+            UriKind.Absolute);
+    }
 
     private static bool TryGetAssetUri(
         JsonElement release,
