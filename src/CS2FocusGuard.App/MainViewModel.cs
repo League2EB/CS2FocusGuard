@@ -11,17 +11,33 @@ using CS2FocusGuard.Core;
 
 namespace CS2FocusGuard.App;
 
+internal enum MainPage
+{
+    Home,
+    Settings
+}
+
 [SuppressMessage(
     "Performance",
     "CA1822:Mark members as static",
     Justification = "These properties are instance-bound by WPF.")]
 internal sealed class MainViewModel : INotifyPropertyChanged
 {
+    private const bool IsDebugBuild =
+#if DEBUG
+        true;
+#else
+        false;
+#endif
+
     private readonly AppRuntime _runtime;
     private bool _enabled;
     private bool _startWithWindows;
     private bool _closeToTray;
     private bool _useTraditionalChinese;
+    private bool _useLargeInterface;
+    private bool _useDarkTheme;
+    private MainPage _selectedPage;
     private GuardStatus _status;
     private bool _updating;
     private bool _isLoadingApplications;
@@ -34,6 +50,8 @@ internal sealed class MainViewModel : INotifyPropertyChanged
         _startWithWindows = runtime.Settings.StartWithWindows;
         _closeToTray = runtime.Settings.CloseToTray;
         _useTraditionalChinese = Strings.UseTraditionalChinese;
+        _useLargeInterface = runtime.Settings.UseLargeInterface;
+        _useDarkTheme = runtime.Settings.UseDarkTheme;
         _status = runtime.Status;
         runtime.StatusChanged += OnStatusChanged;
         runtime.ApplicationsChanged += OnApplicationsChanged;
@@ -41,6 +59,10 @@ internal sealed class MainViewModel : INotifyPropertyChanged
         ApplicationsView = CollectionViewSource.GetDefaultView(Applications);
         ApplicationsView.Filter = FilterApplication;
         RefreshApplicationsCommand = new AsyncCommand(LoadApplicationsAsync);
+        NavigateHomeCommand =
+            new RelayCommand(() => SelectedPage = MainPage.Home);
+        NavigateSettingsCommand =
+            new RelayCommand(() => SelectedPage = MainPage.Settings);
         _ = LoadApplicationsAsync();
     }
 
@@ -51,6 +73,10 @@ internal sealed class MainViewModel : INotifyPropertyChanged
     public string AppTitle => Strings.Get("AppTitle");
 
     public string Subtitle => Strings.Get("Subtitle");
+
+    public string SettingsTabLabel => Strings.Get("SettingsTab");
+
+    public string BackLabel => Strings.Get("Back");
 
     public string EnabledLabel => Strings.Get("Enabled");
 
@@ -64,7 +90,52 @@ internal sealed class MainViewModel : INotifyPropertyChanged
 
     public string CloseDescription => Strings.Get("CloseDescription");
 
+    public string GeneralLabel => Strings.Get("General");
+
+    public string GeneralDescription => Strings.Get("GeneralDescription");
+
+    public string DisplayLabel => Strings.Get("Display");
+
+    public string DisplayDescription => Strings.Get("DisplayDescription");
+
+    public string InterfaceSizeLabel => Strings.Get("InterfaceSize");
+
+    public string InterfaceSizeDescription => Strings.Get("InterfaceSizeDescription");
+
+    public string StandardSizeLabel => Strings.Get("StandardSize");
+
+    public string LargeSizeLabel => Strings.Get("LargeSize");
+
+    public string ThemeLabel => Strings.Get("Theme");
+
+    public string ThemeDescription => Strings.Get("ThemeDescription");
+
+    public string LightThemeLabel => Strings.Get("LightTheme");
+
+    public string DarkThemeLabel => Strings.Get("DarkTheme");
+
     public string LanguageToggleLabel => Strings.Get("LanguageToggle");
+
+    public string LanguageLabel => Strings.Get("Language");
+
+    public string LanguageDescription => Strings.Get("LanguageDescription");
+
+    public string AboutLabel => Strings.Get("About");
+
+    public string AboutDescription => Strings.Get("AboutDescription");
+
+    public string VersionLabel => Strings.Get("Version");
+
+    public string VersionText
+    {
+        get
+        {
+            var version = typeof(MainViewModel).Assembly.GetName().Version
+                ?? throw new InvalidOperationException(
+                    "The application version is unavailable.");
+            return FormatVersionText(version, IsDebugBuild);
+        }
+    }
 
     public string StatusLabel => Strings.Get("Status");
 
@@ -84,6 +155,10 @@ internal sealed class MainViewModel : INotifyPropertyChanged
 
     public string NoApplicationsText => Strings.Get("NoApplications");
 
+    public double MinimumWindowWidth => UseLargeInterface ? 650 : 520;
+
+    public double MinimumWindowHeight => 580;
+
     public GuardState State => _status.State;
 
     public ObservableCollection<ApplicationAllowlistItem> Applications { get; } = [];
@@ -91,6 +166,29 @@ internal sealed class MainViewModel : INotifyPropertyChanged
     public ICollectionView ApplicationsView { get; }
 
     public ICommand RefreshApplicationsCommand { get; }
+
+    public ICommand NavigateHomeCommand { get; }
+
+    public ICommand NavigateSettingsCommand { get; }
+
+    public MainPage SelectedPage
+    {
+        get => _selectedPage;
+        private set
+        {
+            if (!SetField(ref _selectedPage, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsHomeSelected));
+            OnPropertyChanged(nameof(IsSettingsSelected));
+        }
+    }
+
+    public bool IsHomeSelected => SelectedPage == MainPage.Home;
+
+    public bool IsSettingsSelected => SelectedPage == MainPage.Settings;
 
     public bool IsLoadingApplications
     {
@@ -187,11 +285,51 @@ internal sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseLargeInterface
+    {
+        get => _useLargeInterface;
+        set
+        {
+            if (!SetField(ref _useLargeInterface, value) || _updating)
+            {
+                return;
+            }
+
+            _runtime.SetUseLargeInterface(value);
+            OnPropertyChanged(nameof(MinimumWindowWidth));
+            OnPropertyChanged(nameof(MinimumWindowHeight));
+        }
+    }
+
+    public bool UseDarkTheme
+    {
+        get => _useDarkTheme;
+        set
+        {
+            if (!SetField(ref _useDarkTheme, value) || _updating)
+            {
+                return;
+            }
+
+            _runtime.SetUseDarkTheme(value);
+        }
+    }
+
     internal void Dispose()
     {
         _runtime.StatusChanged -= OnStatusChanged;
         _runtime.ApplicationsChanged -= OnApplicationsChanged;
         Strings.LanguageChanged -= OnLanguageChanged;
+    }
+
+    internal static string FormatVersionText(
+        Version version,
+        bool isDebugBuild)
+    {
+        var versionText = version.ToString(3);
+        return isDebugBuild
+            ? $"{versionText} ({Strings.Get("DebugBuild")})"
+            : versionText;
     }
 
     private async Task UpdateEnabledAsync(bool enabled)
@@ -250,13 +388,33 @@ internal sealed class MainViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(AppTitle));
         OnPropertyChanged(nameof(Subtitle));
+        OnPropertyChanged(nameof(SettingsTabLabel));
+        OnPropertyChanged(nameof(BackLabel));
         OnPropertyChanged(nameof(EnabledLabel));
         OnPropertyChanged(nameof(EnabledDescription));
         OnPropertyChanged(nameof(StartWithWindowsLabel));
         OnPropertyChanged(nameof(StartDescription));
         OnPropertyChanged(nameof(CloseToTrayLabel));
         OnPropertyChanged(nameof(CloseDescription));
+        OnPropertyChanged(nameof(GeneralLabel));
+        OnPropertyChanged(nameof(GeneralDescription));
+        OnPropertyChanged(nameof(DisplayLabel));
+        OnPropertyChanged(nameof(DisplayDescription));
+        OnPropertyChanged(nameof(InterfaceSizeLabel));
+        OnPropertyChanged(nameof(InterfaceSizeDescription));
+        OnPropertyChanged(nameof(StandardSizeLabel));
+        OnPropertyChanged(nameof(LargeSizeLabel));
+        OnPropertyChanged(nameof(ThemeLabel));
+        OnPropertyChanged(nameof(ThemeDescription));
+        OnPropertyChanged(nameof(LightThemeLabel));
+        OnPropertyChanged(nameof(DarkThemeLabel));
         OnPropertyChanged(nameof(LanguageToggleLabel));
+        OnPropertyChanged(nameof(LanguageLabel));
+        OnPropertyChanged(nameof(LanguageDescription));
+        OnPropertyChanged(nameof(AboutLabel));
+        OnPropertyChanged(nameof(AboutDescription));
+        OnPropertyChanged(nameof(VersionLabel));
+        OnPropertyChanged(nameof(VersionText));
         OnPropertyChanged(nameof(StatusLabel));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(AudioAllowlistLabel));
@@ -506,4 +664,17 @@ internal sealed class AsyncCommand(Func<Task> execute) : ICommand
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+}
+
+internal sealed class RelayCommand(Action execute) : ICommand
+{
+    public event EventHandler? CanExecuteChanged
+    {
+        add { }
+        remove { }
+    }
+
+    public bool CanExecute(object? parameter) => true;
+
+    public void Execute(object? parameter) => execute();
 }

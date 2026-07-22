@@ -1,0 +1,100 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <sys:Double x:Key="Metric.Font.Small">11</sys:Double>
+    <sys:Double x:Key="Metric.Font.Body">12</sys:Double>
+    <sys:Double x:Key="Metric.Font.Control">13</sys:Double>
+    <sys:Double x:Key="Metric.Font.Status">14</sys:Double>
+    <sys:Double x:Key="Metric.Font.Setting">15</sys:Double>
+    <sys:Double x:Key="Metric.Font.DialogTitle">17</sys:Double>
+    <sys:Double x:Key="Metric.Font.PageTitle">21</sys:Double>
+
+    <sys:Double x:Key="Metric.Control.ToggleWidth">48</sys:Double>
+    <sys:Double x:Key="Metric.Control.ToggleHeight">26</sys:Double>
+    <sys:Double x:Key="Metric.Control.ToggleKnob">20</sys:Double>
+    <sys:Double x:Key="Metric.Control.LanguageWidth">64</sys:Double>
+    <sys:Double x:Key="Metric.Control.SegmentedWidth">148</sys:Double>
+    <sys:Double x:Key="Metric.Control.ButtonHeight">32</sys:Double>
+    <sys:Double x:Key="Metric.Control.HeaderButton">38</sys:Double>
+    <sys:Double x:Key="Metric.Control.TextBoxHeight">36</sys:Double>
+    <sys:Double x:Key="Metric.Control.RefreshButton">36</sys:Double>
+    <sys:Double x:Key="Metric.Control.LaterButtonWidth">80</sys:Double>
+    <sys:Double x:Key="Metric.Control.UpdateButtonWidth">104</sys:Double>
+    <sys:Double x:Key="Metric.Control.CancelButtonWidth">88</sys:Double>
+    <sys:Double x:Key="Metric.Control.ScrollBarWidth">10</sys:Double>
+    <sys:Double x:Key="Metric.Control.ProgressHeight">8</sys:Double>
+
+    <sys:Double x:Key="Metric.Icon.HeaderBadge">42</sys:Double>
+    <sys:Double x:Key="Metric.Icon.HeaderBadgeGlyph">17</sys:Double>
+    <sys:Double x:Key="Metric.Icon.Settings">19</sys:Double>
+    <sys:Double x:Key="Metric.Icon.Back">18</sys:Double>
+    <sys:Double x:Key="Metric.Icon.Refresh">18</sys:Double>
+    <sys:Double x:Key="Metric.Icon.ListBackground">34</sys:Double>
+    <sys:Double x:Key="Metric.Icon.ListImage">26</sys:Double>
+    <sys:Double x:Key="Metric.StatusDot">10</sys:Double>
+
+    <sys:Double x:Key="Metric.Layout.ContentMinHeight">500</sys:Double>
+    <sys:Double x:Key="Metric.Layout.AllowlistMinHeight">80</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.AvailableWidth">352</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.AvailableHeight">167</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.ProgressWidth">332</sys:Double>
+    <sys:Double x:Key="Metric.Dialog.ProgressHeight">132</sys:Double>
+
+    <sys:Double x:Key="Metric.Stroke.Icon">2</sys:Double>
+    <sys:Double x:Key="Metric.Stroke.Settings">1.7</sys:Double>
+    <sys:Double x:Key="Metric.Shadow.Blur">4</sys:Double>
+    <sys:Double x:Key="Metric.Shadow.SmallBlur">3</sys:Double>
+    <sys:Double x:Key="Metric.Shadow.Depth">1</sys:Double>
+
+    <GridLength x:Key="Metric.Layout.HeaderGap">18</GridLength>
+    <GridLength x:Key="Metric.Layout.HomeGap">16</GridLength>
+    <GridLength x:Key="Metric.Layout.HeaderIconColumn">52</GridLength>
+    <GridLength x:Key="Metric.Layout.ListIconColumn">42</GridLength>
+    <GridLength x:Key="Metric.Layout.Divider">1</GridLength>
+
+    <Thickness x:Key="Metric.Padding.Button">12,6</Thickness>
+    <Thickness x:Key="Metric.Border.Standard">1</Thickness>
+    <Thickness x:Key="Metric.Padding.Main">28,24</Thickness>
+    <Thickness x:Key="Metric.Padding.ToggleKnob">3</Thickness>
+    <Thickness x:Key="Metric.Padding.ToggleInner">2</Thickness>
+    <Thickness x:Key="Metric.Padding.Description">0,4,20,0</Thickness>
+    <Thickness x:Key="Metric.Padding.StatusCard">18,14</Thickness>
+    <Thickness x:Key="Metric.Padding.AllowlistCard">18</Thickness>
+    <Thickness x:Key="Metric.Padding.Info">10,8</Thickness>
+    <Thickness x:Key="Metric.Padding.TextBox">11,7</Thickness>
+    <Thickness x:Key="Metric.Padding.ScrollThumb">2,0</Thickness>
+    <Thickness x:Key="Metric.Padding.Dialog">24</Thickness>
+    <Thickness x:Key="Metric.Margin.HeaderBadgeRays">9</Thickness>
+    <Thickness x:Key="Metric.Margin.Subtitle">0,4,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.HeaderAction">12,2,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.BackTitle">12,0,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.StatusDot">0,0,9,0</Thickness>
+    <Thickness x:Key="Metric.Margin.StatusText">19,4,20,0</Thickness>
+    <Thickness x:Key="Metric.Margin.StatusControls">16,0,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.StatusToggle">0,0,10,0</Thickness>
+    <Thickness x:Key="Metric.Margin.Info">0,12,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.SearchRow">0,14,0,10</Thickness>
+    <Thickness x:Key="Metric.Margin.SearchPlaceholder">12,0,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.Refresh">10,0,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.ListItem">3,5</Thickness>
+    <Thickness x:Key="Metric.Margin.SettingsCard">0,16,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.SettingsSection">18,13</Thickness>
+    <Thickness x:Key="Metric.Margin.SettingsCompact">18,11</Thickness>
+    <Thickness x:Key="Metric.Margin.SettingsDivider">18,0</Thickness>
+    <Thickness x:Key="Metric.Margin.Version">20,0,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.DialogMessage">0,12,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.DialogButtonGap">0,0,10,0</Thickness>
+    <Thickness x:Key="Metric.Margin.ProgressStatus">0,9,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.ProgressBar">0,18,0,0</Thickness>
+    <Thickness x:Key="Metric.Margin.ProgressCancel">0,16,0,0</Thickness>
+
+    <CornerRadius x:Key="Metric.Corner.ScrollThumb">3</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.Selection">5</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.Button">6</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.ListItem">7</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.Control">8</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.LanguageKnob">11</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.HeaderBadge">12</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.Toggle">13</CornerRadius>
+    <CornerRadius x:Key="Metric.Corner.Card">14</CornerRadius>
+</ResourceDictionary>

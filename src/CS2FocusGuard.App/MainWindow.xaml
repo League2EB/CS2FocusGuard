@@ -8,18 +8,22 @@
         Title="{Binding AppTitle}"
         Width="620"
         Height="720"
-        MinWidth="520"
-        MinHeight="580"
+        MinWidth="{Binding MinimumWindowWidth}"
+        MinHeight="{Binding MinimumWindowHeight}"
         Icon="Assets/AppIcon.ico"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#F4F6FA"
+        Background="{DynamicResource WindowBackgroundBrush}"
         FontFamily="Segoe UI"
+        FontSize="{DynamicResource Metric.Font.Body}"
+        UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
         <Style x:Key="ToggleSwitch" TargetType="CheckBox">
-            <Setter Property="Width" Value="48" />
-            <Setter Property="Height" Value="26" />
+            <Setter Property="Width"
+                    Value="{DynamicResource Metric.Control.ToggleWidth}" />
+            <Setter Property="Height"
+                    Value="{DynamicResource Metric.Control.ToggleHeight}" />
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Cursor" Value="Hand" />
@@ -28,19 +32,20 @@
                     <ControlTemplate TargetType="CheckBox">
                         <Grid>
                             <Border x:Name="Track"
-                                    Background="#CBD1DC"
-                                    CornerRadius="13" />
+                                    Background="{DynamicResource ToggleOffBrush}"
+                                    CornerRadius="{DynamicResource Metric.Corner.Toggle}" />
                             <Ellipse x:Name="Knob"
-                                     Width="20"
-                                     Height="20"
-                                     Margin="3"
+                                     Width="{DynamicResource Metric.Control.ToggleKnob}"
+                                     Height="{DynamicResource Metric.Control.ToggleKnob}"
+                                     Margin="{DynamicResource Metric.Padding.ToggleKnob}"
                                      HorizontalAlignment="Left"
-                                     Fill="White">
+                                     Fill="{DynamicResource ToggleKnobBrush}">
                                 <Ellipse.Effect>
-                                    <DropShadowEffect BlurRadius="4"
+                                    <DropShadowEffect BlurRadius="{DynamicResource Metric.Shadow.Blur}"
+                                                      Color="{DynamicResource ShadowColor}"
                                                       Direction="270"
                                                       Opacity="0.22"
-                                                      ShadowDepth="1" />
+                                                      ShadowDepth="{DynamicResource Metric.Shadow.Depth}" />
                                 </Ellipse.Effect>
                             </Ellipse>
                         </Grid>
@@ -48,7 +53,7 @@
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Track"
                                         Property="Background"
-                                        Value="#3771FF" />
+                                        Value="{DynamicResource AccentBrush}" />
                                 <Setter TargetName="Knob"
                                         Property="HorizontalAlignment"
                                         Value="Right" />
@@ -62,45 +67,48 @@
             </Setter>
         </Style>
         <Style x:Key="LanguageToggle" TargetType="CheckBox">
-            <Setter Property="Width" Value="64" />
-            <Setter Property="Height" Value="26" />
+            <Setter Property="Width"
+                    Value="{DynamicResource Metric.Control.LanguageWidth}" />
+            <Setter Property="Height"
+                    Value="{DynamicResource Metric.Control.ToggleHeight}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Border Background="#E3E7EE"
-                                CornerRadius="13">
-                            <Grid Margin="2">
+                        <Border Background="{DynamicResource SurfaceBorderBrush}"
+                                CornerRadius="{DynamicResource Metric.Corner.Toggle}">
+                            <Grid Margin="{DynamicResource Metric.Padding.ToggleInner}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Border x:Name="LanguageKnob"
-                                        Background="White"
-                                        CornerRadius="11"
+                                        Background="{DynamicResource ToggleKnobBrush}"
+                                        CornerRadius="{DynamicResource Metric.Corner.LanguageKnob}"
                                         Grid.Column="1">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4"
+                                        <DropShadowEffect BlurRadius="{DynamicResource Metric.Shadow.Blur}"
+                                                          Color="{DynamicResource ShadowColor}"
                                                           Direction="270"
                                                           Opacity="0.18"
-                                                          ShadowDepth="1" />
+                                                          ShadowDepth="{DynamicResource Metric.Shadow.Depth}" />
                                     </Border.Effect>
                                 </Border>
                                 <TextBlock x:Name="ChineseLabel"
                                            Grid.Column="0"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="12"
+                                           FontSize="{DynamicResource Metric.Font.Body}"
                                            FontWeight="SemiBold"
-                                           Foreground="#667085"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
                                            Text="中" />
                                 <TextBlock x:Name="EnglishLabel"
                                            Grid.Column="1"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="11"
+                                           FontSize="{DynamicResource Metric.Font.Small}"
                                            FontWeight="SemiBold"
-                                           Foreground="#3771FF"
+                                           Foreground="{DynamicResource AccentBrush}"
                                            Text="EN" />
                             </Grid>
                         </Border>
@@ -111,10 +119,84 @@
                                         Value="0" />
                                 <Setter TargetName="ChineseLabel"
                                         Property="Foreground"
-                                        Value="#3771FF" />
+                                        Value="{DynamicResource AccentBrush}" />
                                 <Setter TargetName="EnglishLabel"
                                         Property="Foreground"
-                                        Value="#667085" />
+                                        Value="{DynamicResource SecondaryTextBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SegmentedToggle" TargetType="CheckBox">
+            <Setter Property="Width"
+                    Value="{DynamicResource Metric.Control.SegmentedWidth}" />
+            <Setter Property="Height"
+                    Value="{DynamicResource Metric.Control.ButtonHeight}" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="OuterBorder"
+                                Background="{DynamicResource SurfaceBorderBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Control}">
+                            <Grid Margin="{DynamicResource Metric.Padding.ToggleInner}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="SelectionBorder"
+                                        Background="{DynamicResource SurfaceBrush}"
+                                        CornerRadius="{DynamicResource Metric.Corner.Selection}">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="{DynamicResource Metric.Shadow.SmallBlur}"
+                                                          Color="{DynamicResource ShadowColor}"
+                                                          Direction="270"
+                                                          Opacity="0.14"
+                                                          ShadowDepth="{DynamicResource Metric.Shadow.Depth}" />
+                                    </Border.Effect>
+                                </Border>
+                                <TextBlock x:Name="LeftLabel"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="{DynamicResource Metric.Font.Body}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Text="{TemplateBinding Tag}" />
+                                <TextBlock x:Name="RightLabel"
+                                           Grid.Column="1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="{DynamicResource Metric.Font.Body}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           Text="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SelectionBorder"
+                                        Property="Grid.Column"
+                                        Value="1" />
+                                <Setter TargetName="LeftLabel"
+                                        Property="Foreground"
+                                        Value="{DynamicResource SecondaryTextBrush}" />
+                                <Setter TargetName="RightLabel"
+                                        Property="Foreground"
+                                        Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="OuterBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -125,14 +207,19 @@
             </Setter>
         </Style>
         <Style x:Key="SettingLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontSize"
+                    Value="{DynamicResource Metric.Font.Setting}" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#172033" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SettingTextBrush}" />
         </Style>
         <Style x:Key="SettingDescription" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,4,20,0" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Foreground" Value="#667085" />
+            <Setter Property="Margin"
+                    Value="{DynamicResource Metric.Padding.Description}" />
+            <Setter Property="FontSize"
+                    Value="{DynamicResource Metric.Font.Body}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style x:Key="RefreshIconButton" TargetType="Button">
@@ -147,7 +234,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
+                                CornerRadius="{DynamicResource Metric.Corner.Button}">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center" />
                         </Border>
@@ -155,12 +242,12 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#EEF4FF" />
+                                        Value="{DynamicResource ControlHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder"
                                         Property="Background"
-                                        Value="#D1E0FF" />
+                                        Value="{DynamicResource ControlPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -170,375 +257,731 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="HeaderIconButton" TargetType="Button">
+            <Setter Property="Width"
+                    Value="{DynamicResource Metric.Control.HeaderButton}" />
+            <Setter Property="Height"
+                    Value="{DynamicResource Metric.Control.HeaderButton}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness"
+                    Value="{DynamicResource Metric.Border.Standard}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{DynamicResource Metric.Corner.Control}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource ControlHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="{DynamicResource ControlPressedBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="BorderBrush"
+                                        Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Grid>
-        <CheckBox HorizontalAlignment="Right"
-                  VerticalAlignment="Top"
-                  Margin="0,7,12,0"
-                  AutomationProperties.Name="{Binding LanguageToggleLabel}"
-                  IsChecked="{Binding UseTraditionalChinese}"
-                  Style="{StaticResource LanguageToggle}"
-                  ToolTip="{Binding LanguageToggleLabel}" />
-        <Grid Margin="28,24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Grid x:Name="MainLayout"
+              Margin="{DynamicResource Metric.Padding.Main}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="{DynamicResource Metric.Layout.HeaderGap}" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="52" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border Width="42"
-                    Height="42"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Background="#3771FF"
-                    CornerRadius="12">
-                <Grid>
-                    <Ellipse Width="17"
-                             Height="17"
-                             Stroke="White"
-                             StrokeThickness="2" />
-                    <Path Data="M 21,9 L 21,14 M 21,28 L 21,33 M 9,21 L 14,21 M 28,21 L 33,21"
-                          Stroke="White"
-                          StrokeThickness="2"
-                          StrokeStartLineCap="Round"
-                          StrokeEndLineCap="Round" />
-                </Grid>
-            </Border>
-            <StackPanel Grid.Column="1">
-                <TextBlock FontSize="21"
-                           FontWeight="SemiBold"
-                           Foreground="#101828"
-                           Text="{Binding AppTitle}" />
-                <TextBlock Margin="0,4,0,0"
-                           FontSize="12"
-                           Foreground="#667085"
-                           Text="{Binding Subtitle}" />
-            </StackPanel>
-        </Grid>
+            <Grid x:Name="HomeHeader">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsHomeSelected}"
+                                         Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{DynamicResource Metric.Layout.HeaderIconColumn}" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Width="{DynamicResource Metric.Icon.HeaderBadge}"
+                        Height="{DynamicResource Metric.Icon.HeaderBadge}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource AccentBrush}"
+                        CornerRadius="{DynamicResource Metric.Corner.HeaderBadge}">
+                    <Grid>
+                        <Ellipse Width="{DynamicResource Metric.Icon.HeaderBadgeGlyph}"
+                                 Height="{DynamicResource Metric.Icon.HeaderBadgeGlyph}"
+                                 Stroke="{DynamicResource AccentForegroundBrush}"
+                                 StrokeThickness="{DynamicResource Metric.Stroke.Icon}" />
+                        <Path x:Name="HeaderBadgeRays"
+                              Margin="{DynamicResource Metric.Margin.HeaderBadgeRays}"
+                              Data="M 21,9 L 21,14 M 21,28 L 21,33 M 9,21 L 14,21 M 28,21 L 33,21"
+                              Stroke="{DynamicResource AccentForegroundBrush}"
+                              StrokeThickness="{DynamicResource Metric.Stroke.Icon}"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              Stretch="Fill" />
+                    </Grid>
+                </Border>
+                <StackPanel Grid.Column="1">
+                    <TextBlock FontSize="{DynamicResource Metric.Font.PageTitle}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryTextBrush}"
+                               Text="{Binding AppTitle}" />
+                    <TextBlock Margin="{DynamicResource Metric.Margin.Subtitle}"
+                               FontSize="{DynamicResource Metric.Font.Body}"
+                               Foreground="{DynamicResource SecondaryTextBrush}"
+                               Text="{Binding Subtitle}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Button x:Name="SettingsButton"
+                        Grid.Column="2"
+                        Margin="{DynamicResource Metric.Margin.HeaderAction}"
+                        VerticalAlignment="Top"
+                        AutomationProperties.Name="{Binding SettingsTabLabel}"
+                        Command="{Binding NavigateSettingsCommand}"
+                        Style="{StaticResource HeaderIconButton}"
+                        ToolTip="{Binding SettingsTabLabel}">
+                    <Path Width="{DynamicResource Metric.Icon.Settings}"
+                          Height="{DynamicResource Metric.Icon.Settings}"
+                          Data="M12,3 L13.4,5.1 L16,4.8 L17.2,7.2 L19.6,8.2 L19.2,10.8 L21,12.6 L19.2,14.4 L19.6,17 L17.2,18 L16,20.4 L13.4,20.1 L12,22.2 L10.6,20.1 L8,20.4 L6.8,18 L4.4,17 L4.8,14.4 L3,12.6 L4.8,10.8 L4.4,8.2 L6.8,7.2 L8,4.8 L10.6,5.1 Z M12,9 A3.6,3.6 0 1 0 12,16.2 A3.6,3.6 0 1 0 12,9"
+                          Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          StrokeLineJoin="Round"
+                          StrokeThickness="{DynamicResource Metric.Stroke.Settings}"
+                          Stretch="Uniform" />
+                </Button>
+            </Grid>
 
-        <Border Grid.Row="1"
-                Margin="0,22,0,18"
-                Padding="16,12"
-                Background="White"
-                BorderBrush="#E3E7EE"
-                BorderThickness="1"
-                CornerRadius="12">
-            <Grid>
+            <Grid x:Name="SettingsHeader">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSettingsSelected}"
+                                         Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Ellipse x:Name="StatusDot"
-                         Width="10"
-                         Height="10"
-                         Margin="0,0,10,0">
-                    <Ellipse.Style>
-                        <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#98A2B3" />
+                <Button x:Name="BackButton"
+                        AutomationProperties.Name="{Binding BackLabel}"
+                        Command="{Binding NavigateHomeCommand}"
+                        Style="{StaticResource HeaderIconButton}"
+                        ToolTip="{Binding BackLabel}">
+                    <Path Width="{DynamicResource Metric.Icon.Back}"
+                          Height="{DynamicResource Metric.Icon.Back}"
+                          Data="M15,4 L7,12 L15,20"
+                          Stroke="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                          StrokeEndLineCap="Round"
+                          StrokeLineJoin="Round"
+                          StrokeStartLineCap="Round"
+                          StrokeThickness="{DynamicResource Metric.Stroke.Icon}"
+                          Stretch="Uniform" />
+                </Button>
+                <TextBlock Grid.Column="1"
+                           Margin="{DynamicResource Metric.Margin.BackTitle}"
+                           VerticalAlignment="Center"
+                           FontSize="{DynamicResource Metric.Font.PageTitle}"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryTextBrush}"
+                           Text="{Binding SettingsTabLabel}" />
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <ScrollViewer x:Name="HomeScroller"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.Style>
+                        <Style TargetType="ScrollViewer">
+                            <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding State}"
-                                             Value="{x:Static core:GuardState.Waiting}">
-                                    <Setter Property="Fill" Value="#3771FF" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding State}"
-                                             Value="{x:Static core:GuardState.Suppressed}">
-                                    <Setter Property="Fill" Value="#12B76A" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding State}"
-                                             Value="{x:Static core:GuardState.UserOverride}">
-                                    <Setter Property="Fill" Value="#F79009" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding State}"
-                                             Value="{x:Static core:GuardState.Error}">
-                                    <Setter Property="Fill" Value="#F04438" />
+                                <DataTrigger Binding="{Binding IsHomeSelected}"
+                                             Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Ellipse.Style>
-                </Ellipse>
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="#344054"
-                               Text="{Binding StatusLabel}" />
-                    <TextBlock Margin="6,0,0,0"
-                               FontSize="13"
-                               Foreground="#667085"
-                               Text="{Binding StatusText}" />
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <ScrollViewer Grid.Row="2"
-                      HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <Border Background="White"
-                        BorderBrush="#E3E7EE"
-                        BorderThickness="1"
-                        CornerRadius="14">
-                    <Grid>
+                    </ScrollViewer.Style>
+                    <Grid x:Name="ResponsiveContent"
+                          Height="{Binding ElementName=HomeScroller, Path=ActualHeight}"
+                          MinHeight="{DynamicResource Metric.Layout.ContentMinHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="1" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="1" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="{DynamicResource Metric.Layout.HomeGap}" />
+                            <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <Grid Margin="18,13">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource SettingLabel}"
-                                           Text="{Binding EnabledLabel}" />
-                                <TextBlock Style="{StaticResource SettingDescription}"
-                                           Text="{Binding EnabledDescription}" />
-                            </StackPanel>
-                            <CheckBox Grid.Column="1"
-                                      AutomationProperties.HelpText="{Binding EnabledDescription}"
-                                      AutomationProperties.Name="{Binding EnabledLabel}"
-                                      IsChecked="{Binding Enabled}"
-                                      Style="{StaticResource ToggleSwitch}" />
-                        </Grid>
-
-                        <Border Grid.Row="1"
-                                Margin="18,0"
-                                Background="#EAECF0" />
-
-                        <Grid Grid.Row="2" Margin="18,13">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource SettingLabel}"
-                                           Text="{Binding StartWithWindowsLabel}" />
-                                <TextBlock Style="{StaticResource SettingDescription}"
-                                           Text="{Binding StartDescription}" />
-                            </StackPanel>
-                            <CheckBox Grid.Column="1"
-                                      AutomationProperties.HelpText="{Binding StartDescription}"
-                                      AutomationProperties.Name="{Binding StartWithWindowsLabel}"
-                                      IsChecked="{Binding StartWithWindows}"
-                                      Style="{StaticResource ToggleSwitch}" />
-                        </Grid>
-
-                        <Border Grid.Row="3"
-                                Margin="18,0"
-                                Background="#EAECF0" />
-
-                        <Grid Grid.Row="4" Margin="18,13">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource SettingLabel}"
-                                           Text="{Binding CloseToTrayLabel}" />
-                                <TextBlock Style="{StaticResource SettingDescription}"
-                                           Text="{Binding CloseDescription}" />
-                            </StackPanel>
-                            <CheckBox Grid.Column="1"
-                                      AutomationProperties.HelpText="{Binding CloseDescription}"
-                                      AutomationProperties.Name="{Binding CloseToTrayLabel}"
-                                      IsChecked="{Binding CloseToTray}"
-                                      Style="{StaticResource ToggleSwitch}" />
-                        </Grid>
-                    </Grid>
-                </Border>
-
-                <Border Margin="0,16,0,0"
-                        Padding="18"
-                        Background="White"
-                        BorderBrush="#E3E7EE"
-                        BorderThickness="1"
-                        CornerRadius="14">
-                    <StackPanel>
-                        <TextBlock Style="{StaticResource SettingLabel}"
-                                   Text="{Binding AudioAllowlistLabel}" />
-                        <TextBlock Style="{StaticResource SettingDescription}"
-                                   Text="{Binding AudioAllowlistDescription}" />
-
-                        <Border Margin="0,12,0,0"
-                                Padding="10,8"
-                                Background="#EEF4FF"
-                                CornerRadius="8">
-                            <TextBlock FontSize="12"
-                                       Foreground="#175CD3"
-                                       Text="{Binding Cs2AlwaysAllowedText}" />
+                        <Border Padding="{DynamicResource Metric.Padding.StatusCard}"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse x:Name="StatusDot"
+                                                 Width="{DynamicResource Metric.StatusDot}"
+                                                 Height="{DynamicResource Metric.StatusDot}"
+                                                 Margin="{DynamicResource Metric.Margin.StatusDot}"
+                                                 VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill"
+                                                            Value="{DynamicResource NeutralStatusBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding State}"
+                                                                     Value="{x:Static core:GuardState.Waiting}">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource WaitingStatusBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding State}"
+                                                                     Value="{x:Static core:GuardState.Suppressed}">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource SuccessStatusBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding State}"
+                                                                     Value="{x:Static core:GuardState.UserOverride}">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource WarningStatusBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding State}"
+                                                                     Value="{x:Static core:GuardState.Error}">
+                                                            <Setter Property="Fill"
+                                                                    Value="{DynamicResource ErrorStatusBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock FontSize="{DynamicResource Metric.Font.Body}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   Text="{Binding StatusLabel}" />
+                                    </StackPanel>
+                                    <TextBlock Margin="{DynamicResource Metric.Margin.StatusText}"
+                                               FontSize="{DynamicResource Metric.Font.Status}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               Text="{Binding StatusText}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1"
+                                            Margin="{DynamicResource Metric.Margin.StatusControls}"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                    <TextBlock Margin="{DynamicResource Metric.Margin.StatusToggle}"
+                                               VerticalAlignment="Center"
+                                               FontSize="{DynamicResource Metric.Font.Control}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource BodyTextBrush}"
+                                               Text="{Binding EnabledLabel}" />
+                                    <CheckBox AutomationProperties.HelpText="{Binding EnabledDescription}"
+                                              AutomationProperties.Name="{Binding EnabledLabel}"
+                                              IsChecked="{Binding Enabled}"
+                                              Style="{StaticResource ToggleSwitch}" />
+                                </StackPanel>
+                            </Grid>
                         </Border>
 
-                        <Grid Margin="0,14,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                        <Border x:Name="AudioAllowlistCard"
+                                Grid.Row="2"
+                                Padding="{DynamicResource Metric.Padding.AllowlistCard}"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
                             <Grid>
-                                <TextBox Height="36"
-                                         Padding="11,7"
-                                         VerticalContentAlignment="Center"
-                                         AutomationProperties.Name="{Binding SearchApplicationsLabel}"
-                                         BorderBrush="#D0D5DD"
-                                         BorderThickness="1"
-                                         Text="{Binding ApplicationSearch, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Margin="12,0,0,0"
-                                           VerticalAlignment="Center"
-                                           IsHitTestVisible="False"
-                                           Foreground="#98A2B3"
-                                           Text="{Binding SearchApplicationsLabel}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ApplicationSearch}"
-                                                             Value="">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                            <Button Grid.Column="1"
-                                    Width="36"
-                                    Height="36"
-                                    Margin="10,0,0,0"
-                                    AutomationProperties.Name="{Binding RefreshLabel}"
-                                    Command="{Binding RefreshApplicationsCommand}"
-                                    Style="{StaticResource RefreshIconButton}">
-                                <Button.Triggers>
-                                    <EventTrigger RoutedEvent="Button.Click">
-                                        <BeginStoryboard>
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetName="RefreshIconRotation"
-                                                                 Storyboard.TargetProperty="Angle"
-                                                                 From="0"
-                                                                 To="360"
-                                                                 Duration="0:0:1"
-                                                                 FillBehavior="Stop" />
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
-                                </Button.Triggers>
-                                <Path Width="18"
-                                      Height="18"
-                                      Data="M129.9 292.5C143.2 199.5 223.3 128 320 128C373 128 421 149.5 455.8 184.2C456 184.4 456.2 184.6 456.4 184.8L464 192L416.1 192C398.4 192 384.1 206.3 384.1 224C384.1 241.7 398.4 256 416.1 256L544.1 256C561.8 256 576.1 241.7 576.1 224L576.1 96C576.1 78.3 561.8 64 544.1 64C526.4 64 512.1 78.3 512.1 96L512.1 149.4L500.8 138.7C454.5 92.6 390.5 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6zM573.4 356.5C575.9 339 563.7 322.8 546.3 320.3C528.9 317.8 512.6 330 510.1 347.4C496.8 440.4 416.7 511.9 320 511.9C267 511.9 219 490.4 184.2 455.7C184 455.5 183.8 455.3 183.6 455.1L176 447.9L223.9 447.9C241.6 447.9 255.9 433.6 255.9 415.9C255.9 398.2 241.6 383.9 223.9 383.9L96 384C87.5 384 79.3 387.4 73.3 393.5C67.3 399.6 63.9 407.7 64 416.3L65 543.3C65.1 561 79.6 575.2 97.3 575C115 574.8 129.2 560.4 129 542.7L128.6 491.2L139.3 501.3C185.6 547.4 249.5 576 320 576C449 576 555.7 480.6 573.4 356.5z"
-                                      Fill="#3771FF"
-                                      RenderTransformOrigin="0.5,0.5"
-                                      Stretch="Uniform">
-                                    <Path.RenderTransform>
-                                        <RotateTransform x:Name="RefreshIconRotation" />
-                                    </Path.RenderTransform>
-                                </Path>
-                            </Button>
-                        </Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SettingLabel}"
+                                               Text="{Binding AudioAllowlistLabel}" />
+                                    <TextBlock Style="{StaticResource SettingDescription}"
+                                               Text="{Binding AudioAllowlistDescription}" />
+                                </StackPanel>
 
-                        <Grid>
-                            <ListBox MaxHeight="290"
-                                     Padding="0"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     ItemsSource="{Binding ApplicationsView}"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                     VirtualizingPanel.IsVirtualizing="True"
-                                     VirtualizingPanel.VirtualizationMode="Recycling">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="HorizontalContentAlignment"
-                                                Value="Stretch" />
-                                        <Setter Property="Padding" Value="0" />
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="3,5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="42" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <Border Width="34"
-                                                    Height="34"
-                                                    HorizontalAlignment="Left"
-                                                    Background="#EAECF0"
-                                                    CornerRadius="8">
-                                                <Grid>
-                                                    <TextBlock HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="#475467"
-                                                               Text="{Binding Initial}" />
-                                                    <Image Width="26"
-                                                           Height="26"
-                                                           Source="{Binding Icon}"
-                                                           Stretch="Uniform" />
+                                <Border Grid.Row="1"
+                                        Margin="{DynamicResource Metric.Margin.Info}"
+                                        Padding="{DynamicResource Metric.Padding.Info}"
+                                        Background="{DynamicResource InfoBackgroundBrush}"
+                                        CornerRadius="{DynamicResource Metric.Corner.Control}">
+                                    <TextBlock FontSize="{DynamicResource Metric.Font.Body}"
+                                               Foreground="{DynamicResource InfoTextBrush}"
+                                               Text="{Binding Cs2AlwaysAllowedText}" />
+                                </Border>
+
+                                <Grid Grid.Row="2"
+                                      Margin="{DynamicResource Metric.Margin.SearchRow}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <TextBox Height="{DynamicResource Metric.Control.TextBoxHeight}"
+                                                 Padding="{DynamicResource Metric.Padding.TextBox}"
+                                                 VerticalContentAlignment="Center"
+                                                 AutomationProperties.Name="{Binding SearchApplicationsLabel}"
+                                                 BorderBrush="{DynamicResource InputBorderBrush}"
+                                                 BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                                 Text="{Binding ApplicationSearch, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock Margin="{DynamicResource Metric.Margin.SearchPlaceholder}"
+                                                   VerticalAlignment="Center"
+                                                   IsHitTestVisible="False"
+                                                   Foreground="{DynamicResource MutedTextBrush}"
+                                                   Text="{Binding SearchApplicationsLabel}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ApplicationSearch}"
+                                                                     Value="">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                    <Button Grid.Column="1"
+                                            Width="{DynamicResource Metric.Control.RefreshButton}"
+                                            Height="{DynamicResource Metric.Control.RefreshButton}"
+                                            Margin="{DynamicResource Metric.Margin.Refresh}"
+                                            AutomationProperties.Name="{Binding RefreshLabel}"
+                                            Command="{Binding RefreshApplicationsCommand}"
+                                            Style="{StaticResource RefreshIconButton}">
+                                        <Button.Triggers>
+                                            <EventTrigger RoutedEvent="Button.Click">
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="RefreshIconRotation"
+                                                                         Storyboard.TargetProperty="Angle"
+                                                                         From="0"
+                                                                         To="360"
+                                                                         Duration="0:0:1"
+                                                                         FillBehavior="Stop" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Button.Triggers>
+                                        <Path Width="{DynamicResource Metric.Icon.Refresh}"
+                                              Height="{DynamicResource Metric.Icon.Refresh}"
+                                              Data="M129.9 292.5C143.2 199.5 223.3 128 320 128C373 128 421 149.5 455.8 184.2C456 184.4 456.2 184.6 456.4 184.8L464 192L416.1 192C398.4 192 384.1 206.3 384.1 224C384.1 241.7 398.4 256 416.1 256L544.1 256C561.8 256 576.1 241.7 576.1 224L576.1 96C576.1 78.3 561.8 64 544.1 64C526.4 64 512.1 78.3 512.1 96L512.1 149.4L500.8 138.7C454.5 92.6 390.5 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6zM573.4 356.5C575.9 339 563.7 322.8 546.3 320.3C528.9 317.8 512.6 330 510.1 347.4C496.8 440.4 416.7 511.9 320 511.9C267 511.9 219 490.4 184.2 455.7C184 455.5 183.8 455.3 183.6 455.1L176 447.9L223.9 447.9C241.6 447.9 255.9 433.6 255.9 415.9C255.9 398.2 241.6 383.9 223.9 383.9L96 384C87.5 384 79.3 387.4 73.3 393.5C67.3 399.6 63.9 407.7 64 416.3L65 543.3C65.1 561 79.6 575.2 97.3 575C115 574.8 129.2 560.4 129 542.7L128.6 491.2L139.3 501.3C185.6 547.4 249.5 576 320 576C449 576 555.7 480.6 573.4 356.5z"
+                                              Fill="{DynamicResource AccentBrush}"
+                                              RenderTransformOrigin="0.5,0.5"
+                                              Stretch="Uniform">
+                                            <Path.RenderTransform>
+                                                <RotateTransform x:Name="RefreshIconRotation" />
+                                            </Path.RenderTransform>
+                                        </Path>
+                                    </Button>
+                                </Grid>
+
+                                <Grid Grid.Row="3">
+                                    <ListBox MinHeight="{DynamicResource Metric.Layout.AllowlistMinHeight}"
+                                             Padding="0"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             ItemsSource="{Binding ApplicationsView}"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             VirtualizingPanel.IsVirtualizing="True"
+                                             VirtualizingPanel.VirtualizationMode="Recycling">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="HorizontalContentAlignment"
+                                                        Value="Stretch" />
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Background"
+                                                        Value="Transparent" />
+                                                <Setter Property="Foreground"
+                                                        Value="{DynamicResource BodyTextBrush}" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                            <Border x:Name="ItemBorder"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    CornerRadius="{DynamicResource Metric.Corner.ListItem}">
+                                                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver"
+                                                                         Value="True">
+                                                                    <Setter TargetName="ItemBorder"
+                                                                            Property="Background"
+                                                                            Value="{DynamicResource ListItemHoverBrush}" />
+                                                                </Trigger>
+                                                                <Trigger Property="IsSelected"
+                                                                         Value="True">
+                                                                    <Setter TargetName="ItemBorder"
+                                                                            Property="Background"
+                                                                            Value="{DynamicResource ListItemSelectedBrush}" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="{DynamicResource Metric.Margin.ListItem}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{DynamicResource Metric.Layout.ListIconColumn}" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="{DynamicResource Metric.Icon.ListBackground}"
+                                                            Height="{DynamicResource Metric.Icon.ListBackground}"
+                                                            HorizontalAlignment="Left"
+                                                            Background="{DynamicResource ItemIconBackgroundBrush}"
+                                                            CornerRadius="{DynamicResource Metric.Corner.Control}">
+                                                        <Grid>
+                                                            <TextBlock HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource ItemIconTextBrush}"
+                                                                       Text="{Binding Initial}" />
+                                                            <Image Width="{DynamicResource Metric.Icon.ListImage}"
+                                                                   Height="{DynamicResource Metric.Icon.ListImage}"
+                                                                   Source="{Binding Icon}"
+                                                                   Stretch="Uniform" />
+                                                        </Grid>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock FontSize="{DynamicResource Metric.Font.Control}"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource BodyTextBrush}"
+                                                                   Text="{Binding DisplayName}" />
+                                                        <TextBlock FontSize="{DynamicResource Metric.Font.Small}"
+                                                                   Foreground="{DynamicResource MutedTextBrush}"
+                                                                   Text="{Binding Id}" />
+                                                    </StackPanel>
+                                                    <CheckBox Grid.Column="2"
+                                                              AutomationProperties.Name="{Binding DisplayName}"
+                                                              IsChecked="{Binding IsAllowed, Mode=TwoWay}"
+                                                              Style="{StaticResource ToggleSwitch}" />
                                                 </Grid>
-                                            </Border>
-                                            <StackPanel Grid.Column="1"
-                                                        VerticalAlignment="Center">
-                                                <TextBlock FontSize="13"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#344054"
-                                                           Text="{Binding DisplayName}" />
-                                                <TextBlock FontSize="11"
-                                                           Foreground="#98A2B3"
-                                                           Text="{Binding Id}" />
-                                            </StackPanel>
-                                            <CheckBox Grid.Column="2"
-                                                      AutomationProperties.Name="{Binding DisplayName}"
-                                                      IsChecked="{Binding IsAllowed, Mode=TwoWay}"
-                                                      Style="{StaticResource ToggleSwitch}" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
 
-                            <TextBlock HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="#667085"
-                                       Text="{Binding LoadingApplicationsText}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsLoadingApplications}"
-                                                         Value="True">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               Text="{Binding LoadingApplicationsText}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLoadingApplications}"
+                                                                 Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
 
-                            <TextBlock HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="#667085"
-                                       Text="{Binding NoApplicationsText}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ShowNoApplications}"
-                                                         Value="True">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               Text="{Binding NoApplicationsText}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ShowNoApplications}"
+                                                                 Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+
+                <ScrollViewer x:Name="SettingsScroller"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.Style>
+                        <Style TargetType="ScrollViewer">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSettingsSelected}"
+                                             Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ScrollViewer.Style>
+                    <StackPanel>
+                        <Border Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <TextBlock Style="{StaticResource SettingLabel}"
+                                               Text="{Binding GeneralLabel}" />
+                                    <TextBlock Style="{StaticResource SettingDescription}"
+                                               Text="{Binding GeneralDescription}" />
+                                </StackPanel>
+                                <Border Grid.Row="1"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="2"
+                                      Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource SettingLabel}"
+                                                   Text="{Binding StartWithWindowsLabel}" />
+                                        <TextBlock Style="{StaticResource SettingDescription}"
+                                                   Text="{Binding StartDescription}" />
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              AutomationProperties.HelpText="{Binding StartDescription}"
+                                              AutomationProperties.Name="{Binding StartWithWindowsLabel}"
+                                              IsChecked="{Binding StartWithWindows}"
+                                              Style="{StaticResource ToggleSwitch}" />
+                                </Grid>
+                                <Border Grid.Row="3"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="4"
+                                      Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource SettingLabel}"
+                                                   Text="{Binding CloseToTrayLabel}" />
+                                        <TextBlock Style="{StaticResource SettingDescription}"
+                                                   Text="{Binding CloseDescription}" />
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              AutomationProperties.HelpText="{Binding CloseDescription}"
+                                              AutomationProperties.Name="{Binding CloseToTrayLabel}"
+                                              IsChecked="{Binding CloseToTray}"
+                                              Style="{StaticResource ToggleSwitch}" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border Margin="{DynamicResource Metric.Margin.SettingsCard}"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <TextBlock Style="{StaticResource SettingLabel}"
+                                               Text="{Binding DisplayLabel}" />
+                                    <TextBlock Style="{StaticResource SettingDescription}"
+                                               Text="{Binding DisplayDescription}" />
+                                </StackPanel>
+                                <Border Grid.Row="1"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="2"
+                                      Margin="{DynamicResource Metric.Margin.SettingsCompact}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource SettingLabel}"
+                                                   Text="{Binding InterfaceSizeLabel}" />
+                                        <TextBlock Style="{StaticResource SettingDescription}"
+                                                   Text="{Binding InterfaceSizeDescription}" />
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              AutomationProperties.HelpText="{Binding InterfaceSizeDescription}"
+                                              AutomationProperties.Name="{Binding InterfaceSizeLabel}"
+                                              Content="{Binding LargeSizeLabel}"
+                                              IsChecked="{Binding UseLargeInterface}"
+                                              Style="{StaticResource SegmentedToggle}"
+                                              Tag="{Binding StandardSizeLabel}" />
+                                </Grid>
+                                <Border Grid.Row="3"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="4"
+                                      Margin="{DynamicResource Metric.Margin.SettingsCompact}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource SettingLabel}"
+                                                   Text="{Binding ThemeLabel}" />
+                                        <TextBlock Style="{StaticResource SettingDescription}"
+                                                   Text="{Binding ThemeDescription}" />
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              AutomationProperties.HelpText="{Binding ThemeDescription}"
+                                              AutomationProperties.Name="{Binding ThemeLabel}"
+                                              Content="{Binding DarkThemeLabel}"
+                                              IsChecked="{Binding UseDarkTheme}"
+                                              Style="{StaticResource SegmentedToggle}"
+                                              Tag="{Binding LightThemeLabel}" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border Margin="{DynamicResource Metric.Margin.SettingsCard}"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <TextBlock Style="{StaticResource SettingLabel}"
+                                               Text="{Binding LanguageLabel}" />
+                                    <TextBlock Style="{StaticResource SettingDescription}"
+                                               Text="{Binding LanguageDescription}" />
+                                </StackPanel>
+                                <Border Grid.Row="1"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="2"
+                                      Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource SettingLabel}"
+                                                   Text="{Binding LanguageLabel}" />
+                                        <TextBlock Style="{StaticResource SettingDescription}"
+                                                   Text="{Binding LanguageToggleLabel}" />
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="1"
+                                              VerticalAlignment="Center"
+                                              AutomationProperties.Name="{Binding LanguageToggleLabel}"
+                                              IsChecked="{Binding UseTraditionalChinese}"
+                                              Style="{StaticResource LanguageToggle}"
+                                              ToolTip="{Binding LanguageToggleLabel}" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border Margin="{DynamicResource Metric.Margin.SettingsCard}"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource SurfaceBorderBrush}"
+                                BorderThickness="{DynamicResource Metric.Border.Standard}"
+                                CornerRadius="{DynamicResource Metric.Corner.Card}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="{DynamicResource Metric.Layout.Divider}" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <TextBlock Style="{StaticResource SettingLabel}"
+                                               Text="{Binding AboutLabel}" />
+                                    <TextBlock Style="{StaticResource SettingDescription}"
+                                               Text="{Binding AboutDescription}" />
+                                </StackPanel>
+                                <Border Grid.Row="1"
+                                        Margin="{DynamicResource Metric.Margin.SettingsDivider}"
+                                        Background="{DynamicResource DividerBrush}" />
+                                <Grid Grid.Row="2"
+                                      Margin="{DynamicResource Metric.Margin.SettingsSection}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock VerticalAlignment="Center"
+                                               Style="{StaticResource SettingLabel}"
+                                               Text="{Binding VersionLabel}" />
+                                    <TextBlock x:Name="VersionValue"
+                                               Grid.Column="1"
+                                               Margin="{DynamicResource Metric.Margin.Version}"
+                                               VerticalAlignment="Center"
+                                               AutomationProperties.Name="{Binding VersionLabel}"
+                                               FontSize="{DynamicResource Metric.Font.Control}"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               Text="{Binding VersionText}" />
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                </ScrollViewer>
+            </Grid>
+
         </Grid>
     </Grid>
 </Window>

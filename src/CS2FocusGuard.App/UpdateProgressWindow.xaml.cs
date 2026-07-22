@@ -22,6 +22,7 @@ public partial class UpdateProgressWindow : Window, INotifyPropertyChanged
         _cancellationSource = cancellationSource;
         _statusText = Strings.Get("UpdatePreparing");
         InitializeComponent();
+        AppearanceManager.RegisterWindow(this);
         DataContext = this;
         Strings.LanguageChanged += OnLanguageChanged;
     }

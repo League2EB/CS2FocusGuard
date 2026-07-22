@@ -17,6 +17,7 @@ public partial class UpdateAvailableWindow : Window, INotifyPropertyChanged
     {
         _version = version;
         InitializeComponent();
+        AppearanceManager.RegisterWindow(this);
         DataContext = this;
         Strings.LanguageChanged += OnLanguageChanged;
     }

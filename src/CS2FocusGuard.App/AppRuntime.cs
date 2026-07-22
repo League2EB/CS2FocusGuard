@@ -162,6 +162,20 @@ internal sealed class AppRuntime : IAsyncDisposable
         Strings.SetUseTraditionalChinese(useTraditionalChinese);
     }
 
+    internal void SetUseLargeInterface(bool useLargeInterface)
+    {
+        Settings = Settings with { UseLargeInterface = useLargeInterface };
+        _settingsStore.Save(Settings);
+        AppearanceManager.ApplyInterfaceMetrics(useLargeInterface);
+    }
+
+    internal void SetUseDarkTheme(bool useDarkTheme)
+    {
+        Settings = Settings with { UseDarkTheme = useDarkTheme };
+        _settingsStore.Save(Settings);
+        AppearanceManager.ApplyTheme(useDarkTheme);
+    }
+
     internal Task<IReadOnlyList<ApplicationDescriptor>> GetApplicationsAsync(
         CancellationToken cancellationToken = default) =>
         _applicationCatalog.GetApplicationsAsync(
@@ -248,6 +262,7 @@ internal sealed class AppRuntime : IAsyncDisposable
                 AudioAllowlistSettings.Normalize(loaded.AudioAllowlist)
         };
         Strings.SetUseTraditionalChinese(Settings.UseTraditionalChinese.Value);
+        AppearanceManager.Apply(Settings);
         _settingsStore.Save(Settings);
     }
 

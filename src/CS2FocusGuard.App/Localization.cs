@@ -15,6 +15,8 @@ internal static class Strings
             ["Subtitle"] = (
                 "Block notifications and unapproved app audio while Counter-Strike 2 is running.",
                 "Counter-Strike 2 執行時阻擋通知與未允許的應用程式聲音。"),
+            ["SettingsTab"] = ("Settings", "設定"),
+            ["Back"] = ("Back", "返回"),
             ["Enabled"] = ("Enable", "啟用"),
             ["EnabledDescription"] = (
                 "Monitor cs2.exe and automatically control notifications and app audio.",
@@ -27,6 +29,36 @@ internal static class Strings
             ["CloseDescription"] = (
                 "Keep monitoring when the window is closed.",
                 "關閉視窗後繼續在背景監控。"),
+            ["General"] = ("General", "一般"),
+            ["GeneralDescription"] = (
+                "Control startup and background behavior.",
+                "控制啟動與背景執行方式。"),
+            ["Display"] = ("Display", "顯示"),
+            ["DisplayDescription"] = (
+                "Adjust the interface size and color theme.",
+                "調整介面大小與色彩主題。"),
+            ["InterfaceSize"] = ("Interface size", "介面大小"),
+            ["InterfaceSizeDescription"] = (
+                "Enlarge text, controls, icons, and spacing.",
+                "放大文字、控制項、圖示與間距。"),
+            ["StandardSize"] = ("Standard", "標準"),
+            ["LargeSize"] = ("Large", "放大"),
+            ["Theme"] = ("Theme", "主題"),
+            ["ThemeDescription"] = (
+                "Choose a light or dark appearance.",
+                "選擇白天或黑夜外觀。"),
+            ["LightTheme"] = ("Light", "白天"),
+            ["DarkTheme"] = ("Dark", "黑夜"),
+            ["Language"] = ("Language", "語言"),
+            ["LanguageDescription"] = (
+                "Choose the interface language.",
+                "選擇介面顯示語言。"),
+            ["About"] = ("About", "關於"),
+            ["AboutDescription"] = (
+                "Application and build information.",
+                "應用程式與組建資訊。"),
+            ["Version"] = ("Version", "版本"),
+            ["DebugBuild"] = ("Debug", "偵錯"),
             ["Status"] = ("Status", "狀態"),
             ["Disabled"] = ("Disabled", "已停用"),
             ["Waiting"] = ("Waiting for Counter-Strike 2", "正在等待 Counter-Strike 2"),

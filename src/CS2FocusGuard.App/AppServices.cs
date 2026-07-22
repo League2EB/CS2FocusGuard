@@ -302,7 +302,9 @@ internal sealed record AppSettings(
     bool StartWithWindows = false,
     bool CloseToTray = true,
     bool? UseTraditionalChinese = null,
-    string[]? AudioAllowlist = null);
+    string[]? AudioAllowlist = null,
+    bool UseLargeInterface = false,
+    bool UseDarkTheme = false);
 
 internal sealed class AppSettingsStore
 {

@@ -11,6 +11,7 @@ public partial class MainWindow : System.Windows.Window
     internal MainWindow(AppRuntime runtime)
     {
         InitializeComponent();
+        AppearanceManager.RegisterWindow(this);
         _viewModel = new MainViewModel(runtime);
         DataContext = _viewModel;
     }

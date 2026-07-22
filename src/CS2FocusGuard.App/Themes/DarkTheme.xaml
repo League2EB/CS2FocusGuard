@@ -1,0 +1,45 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="ShadowColor">#80000000</Color>
+
+    <LinearGradientBrush x:Key="WindowBackgroundBrush"
+                         StartPoint="0,0"
+                         EndPoint="1,1">
+        <GradientStop Offset="0" Color="#FF121823" />
+        <GradientStop Offset="0.55" Color="#FF0E141D" />
+        <GradientStop Offset="1" Color="#FF171D28" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#181E29" />
+    <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#303949" />
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#F2F4F7" />
+    <SolidColorBrush x:Key="SettingTextBrush" Color="#F2F4F7" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#B3BDCC" />
+    <SolidColorBrush x:Key="BodyTextBrush" Color="#D0D5DD" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#98A2B3" />
+    <SolidColorBrush x:Key="DividerBrush" Color="#303949" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#5B8CFF" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#7AA2FF" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#4E7BEA" />
+    <SolidColorBrush x:Key="AccentForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ToggleOffBrush" Color="#475467" />
+    <SolidColorBrush x:Key="ToggleKnobBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#222A37" />
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="#263A61" />
+    <SolidColorBrush x:Key="ControlPressedBrush" Color="#304B7E" />
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#151B24" />
+    <SolidColorBrush x:Key="InputBorderBrush" Color="#475467" />
+    <SolidColorBrush x:Key="InfoBackgroundBrush" Color="#172A4D" />
+    <SolidColorBrush x:Key="InfoTextBrush" Color="#84ADFF" />
+    <SolidColorBrush x:Key="ItemIconBackgroundBrush" Color="#303949" />
+    <SolidColorBrush x:Key="ItemIconTextBrush" Color="#D0D5DD" />
+    <SolidColorBrush x:Key="ListItemHoverBrush" Color="#222A37" />
+    <SolidColorBrush x:Key="ListItemSelectedBrush" Color="#263A61" />
+    <SolidColorBrush x:Key="ScrollBarTrackBrush" Color="#181E29" />
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#475467" />
+    <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#667085" />
+    <SolidColorBrush x:Key="NeutralStatusBrush" Color="#98A2B3" />
+    <SolidColorBrush x:Key="WaitingStatusBrush" Color="#5B8CFF" />
+    <SolidColorBrush x:Key="SuccessStatusBrush" Color="#32D583" />
+    <SolidColorBrush x:Key="WarningStatusBrush" Color="#FDB022" />
+    <SolidColorBrush x:Key="ErrorStatusBrush" Color="#F97066" />
+</ResourceDictionary>
